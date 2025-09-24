@@ -1,0 +1,37 @@
+# Copyright (C) 2025 TB-Web
+# This file is distributed under the same license as the WC Qualiopi Steps plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: WC Qualiopi Steps 1.0.7\n"
+"Report-Msgid-Bugs-To: https://github.com/SrGabrysh/wc_qualiopi_steps\n"
+"POT-Creation-Date: 2025-09-24 16:50+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: wc_qualiopi_steps.php:35
+msgid "WC Qualiopi Steps requires PHP 8.1 or higher. Current version: %s"
+msgstr ""
+
+#: wc_qualiopi_steps.php:42
+msgid "WC Qualiopi Steps: Composer autoload not found. Run \"composer install\" in the plugin directory."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "WC Qualiopi Steps"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "WC Qualiopi Steps est un plugin WooCommerce qui impose un test de positionnement (Qualiopi) avant paiement. Mapping produit→page de test via page d'options, jeton HMAC + session, garde checkout, logs d'audit et page fallback. Développement step-by-step, SRP, UX accessible."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "TB-Web"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://tb-web.fr"
+msgstr ""

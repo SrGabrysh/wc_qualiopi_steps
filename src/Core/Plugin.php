@@ -24,7 +24,46 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '1.0.0';
+	const VERSION = '0.2.0';
+
+	/**
+	 * Flags par défaut du plugin
+	 */
+	const DEFAULT_FLAGS = array(
+		'enforce_cart'     => false, // étape 3
+		'enforce_checkout' => false, // étape 4
+		'logging'          => true,  // étape 8
+	);
+
+	/**
+	 * Helper central pour récupérer les flags avec merge des defaults
+	 *
+	 * @param string|null $flag_name Nom du flag spécifique ou null pour tous
+	 * @return mixed Valeur du flag ou array de tous les flags
+	 */
+	public static function get_flags( $flag_name = null ) {
+		$stored_flags = get_option( 'wcqs_flags', array() );
+		$flags = wp_parse_args( $stored_flags, self::DEFAULT_FLAGS );
+
+		if ( null !== $flag_name ) {
+			return isset( $flags[ $flag_name ] ) ? $flags[ $flag_name ] : null;
+		}
+
+		return $flags;
+	}
+
+	/**
+	 * Helper pour mettre à jour un flag spécifique
+	 *
+	 * @param string $flag_name Nom du flag
+	 * @param mixed  $value Nouvelle valeur
+	 * @return bool Succès de la mise à jour
+	 */
+	public static function set_flag( $flag_name, $value ) {
+		$flags = self::get_flags();
+		$flags[ $flag_name ] = $value;
+		return update_option( 'wcqs_flags', $flags );
+	}
 
 	/**
 	 * Constructeur privé (Singleton)

@@ -14,13 +14,12 @@ class Deactivator {
 	 * @return void
 	 */
 	public static function run(): void {
-		// Exemple : déplanifier la tâche CRON si elle existe.
-		$ts = wp_next_scheduled( 'wc_qualiopi_steps_daily_task' );
-		if ( $ts ) {
-			wp_unschedule_event( $ts, 'wc_qualiopi_steps_daily_task' );
+		// Step 0 : Désactivation propre sans suppression d'options
+		// Les options sont conservées pour réactivation
+		
+		// Log de désactivation (dev uniquement)
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( '[wc_qualiopi_steps] Plugin désactivé - Options conservées.' );
 		}
-
-		// Pas de suppression d'options à la désactivation.
-		flush_rewrite_rules();
 	}
 }
