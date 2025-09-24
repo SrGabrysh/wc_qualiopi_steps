@@ -16,5 +16,10 @@
     "scripts": {
         "cs:lint": "phpcs --standard=phpcs.xml.dist --extensions=php,inc src",
         "cs:fix": "phpcbf --standard=phpcs.xml.dist --extensions=php,inc src"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }
