@@ -3,12 +3,12 @@
  * Plugin Name: WC Qualiopi Steps
  * Plugin URI: https://github.com/SrGabrysh/wc_qualiopi_steps
  * Description: WC Qualiopi Steps est un plugin WooCommerce qui impose un test de positionnement (Qualiopi) avant paiement. Mapping produit→page de test via page d’options, jeton HMAC + session, garde checkout, logs d’audit et page fallback. Développement step-by-step, SRP, UX accessible.
- * Version: 0.2.1
+ * Version: 0.2.2
  * Author: TB-Web
  * Author URI: https://tb-web.fr
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: wc-qualiopi-steps
+ * Text Domain: wc_qualiopi_steps
  * Domain Path: /languages
  * Requires at least: 6.6
  * Tested up to: 6.7
@@ -20,7 +20,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Constantes du plugin.
-define( 'WC_QUALIOPI_STEPS_VERSION', '0.2.1' );
+define( 'WC_QUALIOPI_STEPS_VERSION', '0.2.2' );
 define( 'WC_QUALIOPI_STEPS_PLUGIN_FILE', __FILE__ );
 define( 'WC_QUALIOPI_STEPS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WC_QUALIOPI_STEPS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -32,14 +32,14 @@ function wc_qualiopi_steps_check_requirements() {
 	// Vérifier PHP 8.1+
 	if ( version_compare( PHP_VERSION, '8.1', '<' ) ) {
 		$errors[] = sprintf(
-			__( 'WC Qualiopi Steps requires PHP 8.1 or higher. Current version: %s', 'wc-qualiopi-steps' ),
+			__( 'WC Qualiopi Steps requires PHP 8.1 or higher. Current version: %s', 'wc_qualiopi_steps' ),
 			PHP_VERSION
 		);
 	}
 	
 	// Vérifier autoload Composer
 	if ( ! file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
-		$errors[] = __( 'WC Qualiopi Steps: Composer autoload not found. Run "composer install" in the plugin directory.', 'wc-qualiopi-steps' );
+		$errors[] = __( 'WC Qualiopi Steps: Composer autoload not found. Run "composer install" in the plugin directory.', 'wc_qualiopi_steps' );
 	}
 	
 	// Afficher les erreurs via admin notices
