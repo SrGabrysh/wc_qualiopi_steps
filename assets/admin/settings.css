@@ -1,0 +1,10 @@
+.wcqs-wrap .wcqs-table .description {
+  color: #666;
+  margin: 0.25em 0 0;
+}
+.wcqs-table input.small-text {
+  width: 120px;
+}
+.wcqs-table td {
+  vertical-align: top;
+}

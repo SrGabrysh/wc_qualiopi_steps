@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.2.0';
+	const VERSION = '0.3.0';
 
 	/**
 	 * Flags par défaut du plugin
@@ -92,6 +92,12 @@ class Plugin {
 		add_action( 'init', array( $this, 'on_init' ) );
 		add_action( 'admin_init', array( $this, 'on_admin_init' ) );
 
+		// Hooks admin pour l'étape 1
+		if ( is_admin() ) {
+			add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+		}
+
 		// Chargement des modules.
 		$this->load_modules();
 	}
@@ -129,5 +135,44 @@ class Plugin {
 	 */
 	public function get_version() {
 		return self::VERSION;
+	}
+
+	/**
+	 * Enregistre les pages admin
+	 */
+	public function register_admin_pages(): void {
+		// Page sous Réglages
+		add_options_page(
+			__( 'Tests de positionnement', 'wc_qualiopi_steps' ),
+			__( 'WC Qualiopi Steps', 'wc_qualiopi_steps' ),
+			'manage_woocommerce',
+			'wcqs-settings',
+			array( '\\WcQualiopiSteps\\Admin\\Settings_Page', 'render_page' )
+		);
+	}
+
+	/**
+	 * Charge les assets admin
+	 */
+	public function enqueue_admin_assets( string $hook ): void {
+		// Ne charger que sur notre page
+		if ( $hook !== 'settings_page_wcqs-settings' ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'wcqs-admin',
+			plugins_url( 'assets/admin/settings.css', WC_QUALIOPI_STEPS_PLUGIN_FILE ),
+			array(),
+			WC_QUALIOPI_STEPS_VERSION
+		);
+
+		wp_enqueue_script(
+			'wcqs-admin',
+			plugins_url( 'assets/admin/settings.js', WC_QUALIOPI_STEPS_PLUGIN_FILE ),
+			array( 'jquery' ),
+			WC_QUALIOPI_STEPS_VERSION,
+			true
+		);
 	}
 }
