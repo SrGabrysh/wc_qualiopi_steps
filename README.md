@@ -1,6 +1,6 @@
 # WC Qualiopi Steps
 
-**Version:** 1.0.3  
+**Version:** 1.0.5  
 **Auteur:** TB-Web  
 
 ## Description
