@@ -1,16 +1,10 @@
 <?php
+namespace WcQualiopiSteps\Core;
+
 /**
  * Classe de désactivation du plugin WC Qualiopi Steps.
  *
  * @package WcQualiopiSteps\Core
- */
-
-namespace WcQualiopiSteps\Core;
-
-/**
- * Classe Deactivator
- * 
- * Gère la désactivation du plugin.
  */
 class Deactivator {
 
@@ -20,12 +14,13 @@ class Deactivator {
 	 * @return void
 	 */
 	public static function run(): void {
-		// Actions de désactivation (pour l'instant vide)
-		// Ici on pourrait :
-		// - Nettoyer les tâches cron
-		// - Désactiver les hooks temporaires
-		// - Sauvegarder l'état avant désactivation
-		
-		// Pour l'étape 0 : rien de spécifique à faire
+		// Exemple : déplanifier la tâche CRON si elle existe.
+		$ts = wp_next_scheduled( 'wc_qualiopi_steps_daily_task' );
+		if ( $ts ) {
+			wp_unschedule_event( $ts, 'wc_qualiopi_steps_daily_task' );
+		}
+
+		// Pas de suppression d'options à la désactivation.
+		flush_rewrite_rules();
 	}
 }

@@ -8,5 +8,6 @@ $baseDir = dirname($vendorDir);
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'WcQualiopiSteps\\Core\\Activator' => $baseDir . '/src/Core/Activator.php',
+    'WcQualiopiSteps\\Core\\Deactivator' => $baseDir . '/src/Core/Deactivator.php',
     'WcQualiopiSteps\\Core\\Plugin' => $baseDir . '/src/Core/Plugin.php',
 );

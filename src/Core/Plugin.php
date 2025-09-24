@@ -1,13 +1,13 @@
 <?php
+namespace WcQualiopiSteps\Core;
+
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Classe principale du plugin WC Qualiopi Steps
  *
  * @package WcQualiopiSteps
  */
-
-defined( 'ABSPATH' ) || exit;
-
-namespace WcQualiopiSteps\Core;
 
 /**
  * Classe principale du plugin
