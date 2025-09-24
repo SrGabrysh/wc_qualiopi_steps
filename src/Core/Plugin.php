@@ -141,6 +141,19 @@ class Plugin {
 	 * Enregistre les pages admin
 	 */
 	public function register_admin_pages(): void {
+		// Sécurise le chargement de la page (évite Class Not Found si autoload/chemin KO)
+		$file = WC_QUALIOPI_STEPS_PLUGIN_DIR . 'src/Admin/Settings_Page.php';
+		if ( file_exists( $file ) ) {
+			require_once $file;
+		} else {
+			add_action( 'admin_notices', static function () {
+				echo '<div class="notice notice-error"><p>'
+				   . esc_html__( 'WCQS: fichier Settings_Page.php introuvable. Déployez src/Admin/Settings_Page.php.', 'wc_qualiopi_steps' )
+				   . '</p></div>';
+			} );
+			return;
+		}
+
 		// Page sous Réglages
 		add_options_page(
 			__( 'Tests de positionnement', 'wc_qualiopi_steps' ),

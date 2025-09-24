@@ -21,26 +21,34 @@ class Settings_Page {
 			wp_die( esc_html__( 'Permissions insuffisantes.', 'wc_qualiopi_steps' ) );
 		}
 
-		// Gestion POST (save).
-		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			self::handle_post();
+		// Hardening : aucune erreur PHP ne doit casser la page
+		try {
+			// Gestion POST (save).
+			if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+				self::handle_post();
+			}
+
+			$mapping = get_option( self::OPTION_KEY, [ '_version' => 1 ] );
+			if ( ! is_array( $mapping ) ) {
+				$mapping = [ '_version' => 1 ];
+			}
+
+			// Retire la clé interne _version de l'affichage.
+			$rows = array_filter(
+				$mapping,
+				static function ( $k ) {
+					return 0 !== strpos( (string) $k, '_' );
+				},
+				ARRAY_FILTER_USE_KEY
+			);
+
+			self::render_view( $rows );
+		} catch ( \Throwable $e ) {
+			error_log( '[wcqs] settings fatal: ' . $e->getMessage() );
+			echo '<div class="notice notice-error"><p>'
+			   . esc_html__( 'WCQS: une erreur est survenue sur la page de réglages. Consultez debug.log.', 'wc_qualiopi_steps' )
+			   . '</p></div>';
 		}
-
-		$mapping = get_option( self::OPTION_KEY, [ '_version' => 1 ] );
-		if ( ! is_array( $mapping ) ) {
-			$mapping = [ '_version' => 1 ];
-		}
-
-		// Retire la clé interne _version de l'affichage.
-		$rows = array_filter(
-			$mapping,
-			static function ( $k ) {
-				return 0 !== strpos( (string) $k, '_' );
-			},
-			ARRAY_FILTER_USE_KEY
-		);
-
-		self::render_view( $rows );
 	}
 
 	/**

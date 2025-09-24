@@ -22,6 +22,7 @@ class ComposerStaticInit58a7b121a92b59f69a75bb1e4d2a0994
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'WcQualiopiSteps\\Admin\\Settings_Page' => __DIR__ . '/../..' . '/src/Admin/Settings_Page.php',
         'WcQualiopiSteps\\Core\\Activator' => __DIR__ . '/../..' . '/src/Core/Activator.php',
         'WcQualiopiSteps\\Core\\Deactivator' => __DIR__ . '/../..' . '/src/Core/Deactivator.php',
         'WcQualiopiSteps\\Core\\Plugin' => __DIR__ . '/../..' . '/src/Core/Plugin.php',
