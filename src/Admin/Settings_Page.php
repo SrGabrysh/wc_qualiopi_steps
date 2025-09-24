@@ -28,9 +28,9 @@ class Settings_Page {
 				self::handle_post();
 			}
 
-			$mapping = get_option( self::OPTION_KEY, [ '_version' => 1 ] );
+			$mapping = get_option( self::OPTION_KEY, array( '_version' => 1 ) );
 			if ( ! is_array( $mapping ) ) {
-				$mapping = [ '_version' => 1 ];
+				$mapping = array( '_version' => 1 );
 			}
 
 			// Retire la clé interne _version de l'affichage.
@@ -57,14 +57,14 @@ class Settings_Page {
 	private static function handle_post(): void {
 		check_admin_referer( 'wcqs_save_mapping', 'wcqs_nonce' );
 
-		$raw = isset( $_POST['wcqs'] ) && is_array( $_POST['wcqs'] ) ? wp_unslash( $_POST['wcqs'] ) : [];
+		$raw = isset( $_POST['wcqs'] ) && is_array( $_POST['wcqs'] ) ? wp_unslash( $_POST['wcqs'] ) : array();
 
 		// Normalise les lignes reçues.
-		$lines = isset( $raw['lines'] ) && is_array( $raw['lines'] ) ? $raw['lines'] : [];
+		$lines = isset( $raw['lines'] ) && is_array( $raw['lines'] ) ? $raw['lines'] : array();
 
 		// Sanitize et valide.
-		$validated_rows = [];
-		$seen_products  = [];
+		$validated_rows = array();
+		$seen_products  = array();
 
 		foreach ( $lines as $i => $line ) {
 			$product_id = isset( $line['product_id'] ) ? (int) $line['product_id'] : 0;
@@ -100,16 +100,16 @@ class Settings_Page {
 			$seen_products[ $product_id ] = true;
 
 			$key                   = 'product_' . $product_id;
-			$validated_rows[ $key ] = [
+			$validated_rows[ $key ] = array(
 				'page_id'    => $page_id,
 				'gf_form_id' => $gf_id > 0 ? $gf_id : null,
 				'active'     => (bool) $active,
 				'notes'      => $notes,
-			];
+			);
 		}
 
 		// Construit la valeur finale à stocker.
-		$value = [ '_version' => 1 ] + $validated_rows;
+		$value = array( '_version' => 1 ) + $validated_rows;
 
 		// IMPORTANT : update_option conserve autoload=no (mis lors de add_option en step 0).
 		update_option( self::OPTION_KEY, $value );
@@ -131,7 +131,7 @@ class Settings_Page {
 		// Produit publié ?
 		$product_post = get_post( $product_id );
 		if ( ! $product_post || 'product' !== $product_post->post_type ) {
-			return __( 'L'ID produit ne correspond pas à un produit WooCommerce.', 'wc_qualiopi_steps' );
+			return __( 'L\'ID produit ne correspond pas à un produit WooCommerce.', 'wc_qualiopi_steps' );
 		}
 		if ( 'publish' !== $product_post->post_status ) {
 			return __( 'Le produit doit être publié.', 'wc_qualiopi_steps' );
@@ -140,7 +140,7 @@ class Settings_Page {
 		// Page publiée ?
 		$page_post = get_post( $page_id );
 		if ( ! $page_post || 'page' !== $page_post->post_type ) {
-			return __( 'L'ID page ne correspond pas à une page WordPress.', 'wc_qualiopi_steps' );
+			return __( 'L\'ID page ne correspond pas à une page WordPress.', 'wc_qualiopi_steps' );
 		}
 		if ( 'publish' !== $page_post->post_status ) {
 			return __( 'La page de test doit être publiée.', 'wc_qualiopi_steps' );
@@ -218,7 +218,7 @@ class Settings_Page {
 	 * @param array $data
 	 */
 	private static function render_empty_row( bool $template = false ): void {
-		self::render_row( 0, [ 'page_id' => 0, 'gf_form_id' => null, 'active' => true, 'notes' => '' ], $template );
+		self::render_row( 0, array( 'page_id' => 0, 'gf_form_id' => null, 'active' => true, 'notes' => '' ), $template );
 	}
 
 	private static function render_row( int $product_id, array $data, bool $template = false ): void {
