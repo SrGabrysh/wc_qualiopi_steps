@@ -1,0 +1,20 @@
+{
+    "name": "tb-web/wc_qualiopi_steps",
+    "description": "WC Qualiopi Steps est un plugin WooCommerce qui impose un test de positionnement (Qualiopi) avant paiement. Mapping produit→page de test via page d’options, jeton HMAC + session, garde checkout, logs d’audit et page fallback. Développement step-by-step, SRP, UX accessible.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-4": {
+            "WcQualiopiSteps\\": "src/"
+        }
+    },
+    "scripts": {
+        "cs:lint": "phpcs --standard=phpcs.xml.dist --extensions=php,inc src",
+        "cs:fix": "phpcbf --standard=phpcs.xml.dist --extensions=php,inc src"
+    }
+}

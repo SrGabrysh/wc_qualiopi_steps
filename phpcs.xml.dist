@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<ruleset name="Plugin Standards">
+    <description>Coding standards for WC Qualiopi Steps</description>
+    
+    <!-- Rules -->
+    <rule ref="WordPress"/>
+    <rule ref="WordPress-Docs"/>
+    <rule ref="PHPCompatibility"/>
+    
+    <!-- Configuration -->
+    <config name="testVersion" value="8.1-"/>
+    <config name="minimum_supported_wp_version" value="6.6"/>
+    
+    <!-- Files to check -->
+    <file>src</file>
+    <file>wc_qualiopi_steps.php</file>
+    
+    <!-- Arguments -->
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg name="parallel" value="8"/>
+    <arg value="ps"/>
+</ruleset>
