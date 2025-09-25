@@ -11,7 +11,7 @@
 
   // Variables globales pour validation
   var validationTimeouts = {};
-  var ajaxNonce = wcqsAjax?.nonce || '';
+  var ajaxNonce = wcqsAjax?.nonce || "";
 
   function generateRowId() {
     return "r_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
@@ -159,15 +159,15 @@
    */
   function setupInstantValidation() {
     // Validation produits
-    $(document).on('input blur', 'input[name*="[product_id]"]', function() {
+    $(document).on("input blur", 'input[name*="[product_id]"]', function () {
       var $input = $(this);
       var productId = parseInt($input.val());
-      var fieldKey = $input.attr('name') + '_product';
-      
+      var fieldKey = $input.attr("name") + "_product";
+
       clearTimeout(validationTimeouts[fieldKey]);
-      
+
       if (productId > 0) {
-        validationTimeouts[fieldKey] = setTimeout(function() {
+        validationTimeouts[fieldKey] = setTimeout(function () {
           validateProduct($input, productId);
         }, 800); // Délai de 800ms
       } else {
@@ -176,15 +176,15 @@
     });
 
     // Validation pages
-    $(document).on('input blur', 'input[name*="[page_id]"]', function() {
+    $(document).on("input blur", 'input[name*="[page_id]"]', function () {
       var $input = $(this);
       var pageId = parseInt($input.val());
-      var fieldKey = $input.attr('name') + '_page';
-      
+      var fieldKey = $input.attr("name") + "_page";
+
       clearTimeout(validationTimeouts[fieldKey]);
-      
+
       if (pageId > 0) {
-        validationTimeouts[fieldKey] = setTimeout(function() {
+        validationTimeouts[fieldKey] = setTimeout(function () {
           validatePage($input, pageId);
         }, 800);
       } else {
@@ -193,15 +193,15 @@
     });
 
     // Validation Gravity Forms
-    $(document).on('input blur', 'input[name*="[gf_form_id]"]', function() {
+    $(document).on("input blur", 'input[name*="[gf_form_id]"]', function () {
       var $input = $(this);
       var formId = parseInt($input.val());
-      var fieldKey = $input.attr('name') + '_gf';
-      
+      var fieldKey = $input.attr("name") + "_gf";
+
       clearTimeout(validationTimeouts[fieldKey]);
-      
+
       if (formId > 0) {
-        validationTimeouts[fieldKey] = setTimeout(function() {
+        validationTimeouts[fieldKey] = setTimeout(function () {
           validateGfForm($input, formId);
         }, 800);
       } else {
@@ -214,101 +214,101 @@
    * Validation AJAX d'un produit
    */
   function validateProduct($input, productId) {
-    setValidationState($input, 'loading');
-    
+    setValidationState($input, "loading");
+
     $.post(wcqsAjax.ajaxurl, {
-      action: 'wcqs_validate_product',
+      action: "wcqs_validate_product",
       product_id: productId,
-      nonce: ajaxNonce
+      nonce: ajaxNonce,
     })
-    .done(function(response) {
-      if (response.success) {
-        setValidationState($input, 'success', response.data.message);
-        showToast('success', response.data.message);
-      } else {
-        setValidationState($input, 'error', response.data.message);
-        showToast('error', response.data.message);
-      }
-    })
-    .fail(function() {
-      setValidationState($input, 'error', 'Erreur de validation');
-      showToast('error', 'Erreur de validation du produit');
-    });
+      .done(function (response) {
+        if (response.success) {
+          setValidationState($input, "success", response.data.message);
+          showToast("success", response.data.message);
+        } else {
+          setValidationState($input, "error", response.data.message);
+          showToast("error", response.data.message);
+        }
+      })
+      .fail(function () {
+        setValidationState($input, "error", "Erreur de validation");
+        showToast("error", "Erreur de validation du produit");
+      });
   }
 
   /**
    * Validation AJAX d'une page
    */
   function validatePage($input, pageId) {
-    setValidationState($input, 'loading');
-    
+    setValidationState($input, "loading");
+
     $.post(wcqsAjax.ajaxurl, {
-      action: 'wcqs_validate_page',
+      action: "wcqs_validate_page",
       page_id: pageId,
-      nonce: ajaxNonce
+      nonce: ajaxNonce,
     })
-    .done(function(response) {
-      if (response.success) {
-        setValidationState($input, 'success', response.data.message);
-        showToast('success', response.data.message);
-      } else {
-        setValidationState($input, 'error', response.data.message);
-        showToast('error', response.data.message);
-      }
-    })
-    .fail(function() {
-      setValidationState($input, 'error', 'Erreur de validation');
-      showToast('error', 'Erreur de validation de la page');
-    });
+      .done(function (response) {
+        if (response.success) {
+          setValidationState($input, "success", response.data.message);
+          showToast("success", response.data.message);
+        } else {
+          setValidationState($input, "error", response.data.message);
+          showToast("error", response.data.message);
+        }
+      })
+      .fail(function () {
+        setValidationState($input, "error", "Erreur de validation");
+        showToast("error", "Erreur de validation de la page");
+      });
   }
 
   /**
    * Validation AJAX d'un formulaire GF
    */
   function validateGfForm($input, formId) {
-    setValidationState($input, 'loading');
-    
+    setValidationState($input, "loading");
+
     $.post(wcqsAjax.ajaxurl, {
-      action: 'wcqs_validate_gf_form',
+      action: "wcqs_validate_gf_form",
       form_id: formId,
-      nonce: ajaxNonce
+      nonce: ajaxNonce,
     })
-    .done(function(response) {
-      if (response.success) {
-        setValidationState($input, 'success', response.data.message);
-        showToast('info', response.data.message);
-      } else {
-        setValidationState($input, 'error', response.data.message);
-        showToast('warning', response.data.message);
-      }
-    })
-    .fail(function() {
-      setValidationState($input, 'error', 'Erreur de validation');
-      showToast('error', 'Erreur de validation du formulaire');
-    });
+      .done(function (response) {
+        if (response.success) {
+          setValidationState($input, "success", response.data.message);
+          showToast("info", response.data.message);
+        } else {
+          setValidationState($input, "error", response.data.message);
+          showToast("warning", response.data.message);
+        }
+      })
+      .fail(function () {
+        setValidationState($input, "error", "Erreur de validation");
+        showToast("error", "Erreur de validation du formulaire");
+      });
   }
 
   /**
    * Met à jour l'état visuel d'un champ
    */
   function setValidationState($input, state, message) {
-    $input.removeClass('wcqs-loading wcqs-success wcqs-error');
-    
-    switch(state) {
-      case 'loading':
-        $input.addClass('wcqs-loading');
+    $input.removeClass("wcqs-loading wcqs-success wcqs-error");
+
+    switch (state) {
+      case "loading":
+        $input.addClass("wcqs-loading");
         break;
-      case 'success':
-        $input.addClass('wcqs-success');
+      case "success":
+        $input.addClass("wcqs-success");
         break;
-      case 'error':
-        $input.addClass('wcqs-error');
+      case "error":
+        $input.addClass("wcqs-error");
         break;
     }
-    
+
     // Tooltip avec message
     if (message) {
-      $input.attr('title', message);
+      $input.attr("title", message);
     }
   }
 
@@ -316,7 +316,9 @@
    * Efface l'état de validation
    */
   function clearValidationState($input) {
-    $input.removeClass('wcqs-loading wcqs-success wcqs-error').removeAttr('title');
+    $input
+      .removeClass("wcqs-loading wcqs-success wcqs-error")
+      .removeAttr("title");
   }
 
   /**
@@ -324,34 +326,40 @@
    */
   function showToast(type, message) {
     // Crée le container de toasts s'il n'existe pas
-    if ($('#wcqs-toast-container').length === 0) {
-      $('body').append('<div id="wcqs-toast-container"></div>');
+    if ($("#wcqs-toast-container").length === 0) {
+      $("body").append('<div id="wcqs-toast-container"></div>');
     }
-    
-    var $toast = $('<div class="wcqs-toast wcqs-toast-' + type + '">' + 
-                   '<span class="wcqs-toast-message">' + message + '</span>' +
-                   '<button class="wcqs-toast-close">&times;</button>' +
-                   '</div>');
-    
-    $('#wcqs-toast-container').append($toast);
-    
+
+    var $toast = $(
+      '<div class="wcqs-toast wcqs-toast-' +
+        type +
+        '">' +
+        '<span class="wcqs-toast-message">' +
+        message +
+        "</span>" +
+        '<button class="wcqs-toast-close">&times;</button>' +
+        "</div>"
+    );
+
+    $("#wcqs-toast-container").append($toast);
+
     // Animation d'entrée
-    setTimeout(function() {
-      $toast.addClass('wcqs-toast-show');
+    setTimeout(function () {
+      $toast.addClass("wcqs-toast-show");
     }, 100);
-    
+
     // Auto-fermeture après 4s
-    setTimeout(function() {
-      $toast.removeClass('wcqs-toast-show');
-      setTimeout(function() {
+    setTimeout(function () {
+      $toast.removeClass("wcqs-toast-show");
+      setTimeout(function () {
         $toast.remove();
       }, 300);
     }, 4000);
-    
+
     // Fermeture manuelle
-    $toast.find('.wcqs-toast-close').on('click', function() {
-      $toast.removeClass('wcqs-toast-show');
-      setTimeout(function() {
+    $toast.find(".wcqs-toast-close").on("click", function () {
+      $toast.removeClass("wcqs-toast-show");
+      setTimeout(function () {
         $toast.remove();
       }, 300);
     });
@@ -362,104 +370,113 @@
    */
   function setupCsvHandlers() {
     // Export CSV
-    $("#wcqs-export-csv").on("click", function() {
+    $("#wcqs-export-csv").on("click", function () {
       showToast("info", "Génération du fichier CSV...");
-      
+
       var form = $('<form method="post" action="' + wcqsAjax.ajaxurl + '">');
-      form.append('<input type="hidden" name="action" value="wcqs_export_csv">');
-      form.append('<input type="hidden" name="nonce" value="' + ajaxNonce + '">');
-      $('body').append(form);
+      form.append(
+        '<input type="hidden" name="action" value="wcqs_export_csv">'
+      );
+      form.append(
+        '<input type="hidden" name="nonce" value="' + ajaxNonce + '">'
+      );
+      $("body").append(form);
       form.submit();
       form.remove();
-      
-      setTimeout(function() {
+
+      setTimeout(function () {
         showToast("success", "Fichier CSV téléchargé !");
       }, 1000);
     });
 
     // Télécharger template
-    $("#wcqs-download-template").on("click", function() {
+    $("#wcqs-download-template").on("click", function () {
       var csvContent = "Product ID;Page ID;GF Form ID;Active;Notes\n";
       csvContent += "123;456;0;Yes;Exemple de mapping\n";
       csvContent += "124;457;5;No;Mapping inactif avec GF\n";
-      
-      var blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+      var blob = new Blob(["\uFEFF" + csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
       var link = document.createElement("a");
       var url = URL.createObjectURL(blob);
-      
+
       link.setAttribute("href", url);
       link.setAttribute("download", "wcqs_template.csv");
-      link.style.visibility = 'hidden';
-      
+      link.style.visibility = "hidden";
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       showToast("success", "Template CSV téléchargé !");
     });
 
     // Import CSV
-    $("#wcqs-import-csv").on("click", function() {
+    $("#wcqs-import-csv").on("click", function () {
       $("#wcqs-csv-file").click();
     });
 
-    $("#wcqs-csv-file").on("change", function() {
+    $("#wcqs-csv-file").on("change", function () {
       var file = this.files[0];
       if (!file) return;
-      
-      if (file.type !== "text/csv" && !file.name.endsWith('.csv')) {
+
+      if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
         showToast("error", "Veuillez sélectionner un fichier CSV");
         return;
       }
-      
+
       if (file.size > 1024 * 1024) {
         showToast("error", "Fichier trop volumineux (max 1MB)");
         return;
       }
-      
+
       var formData = new FormData();
-      formData.append('action', 'wcqs_import_csv');
-      formData.append('nonce', ajaxNonce);
-      formData.append('csv_file', file);
-      
+      formData.append("action", "wcqs_import_csv");
+      formData.append("nonce", ajaxNonce);
+      formData.append("csv_file", file);
+
       showCsvProgress("Importation en cours...", 30);
-      
+
       $.ajax({
         url: wcqsAjax.ajaxurl,
-        type: 'POST',
+        type: "POST",
         data: formData,
         processData: false,
         contentType: false,
-        success: function(response) {
+        success: function (response) {
           showCsvProgress("Finalisation...", 100);
-          
-          setTimeout(function() {
+
+          setTimeout(function () {
             hideCsvProgress();
-            
+
             if (response.success) {
               showToast("success", response.data.message);
-              
+
               // Recharge la page pour afficher les nouveaux mappings
-              setTimeout(function() {
+              setTimeout(function () {
                 window.location.reload();
               }, 2000);
             } else {
               showToast("error", response.data.message);
-              
+
               if (response.data.error_details) {
-                console.error("Détails des erreurs:", response.data.error_details);
+                console.error(
+                  "Détails des erreurs:",
+                  response.data.error_details
+                );
               }
             }
           }, 500);
         },
-        error: function() {
+        error: function () {
           hideCsvProgress();
           showToast("error", "Erreur lors de l'import CSV");
-        }
+        },
       });
-      
+
       // Reset input
-      $(this).val('');
+      $(this).val("");
     });
   }
 
@@ -488,29 +505,29 @@
     loadLiveStats();
 
     // Actualiser stats
-    $("#wcqs-refresh-stats").on("click", function() {
+    $("#wcqs-refresh-stats").on("click", function () {
       loadLiveStats();
     });
 
     // Recherche rapide
     var searchTimeout;
-    $("#wcqs-search-input").on("input", function() {
+    $("#wcqs-search-input").on("input", function () {
       var searchTerm = $(this).val().trim();
-      
+
       clearTimeout(searchTimeout);
-      
+
       if (searchTerm.length < 2) {
         $("#wcqs-search-results").hide();
         return;
       }
-      
-      searchTimeout = setTimeout(function() {
+
+      searchTimeout = setTimeout(function () {
         performQuickSearch(searchTerm);
       }, 500);
     });
 
     // Auto-refresh des stats toutes les 30 secondes
-    setInterval(function() {
+    setInterval(function () {
       loadLiveStats();
     }, 30000);
   }
@@ -520,21 +537,21 @@
    */
   function loadLiveStats() {
     $("#wcqs-stats-content").html("🔄 Chargement...");
-    
+
     $.post(wcqsAjax.ajaxurl, {
-      action: 'wcqs_live_status',
-      nonce: ajaxNonce
+      action: "wcqs_live_status",
+      nonce: ajaxNonce,
     })
-    .done(function(response) {
-      if (response.success) {
-        displayLiveStats(response.data);
-      } else {
-        $("#wcqs-stats-content").html("❌ Erreur de chargement");
-      }
-    })
-    .fail(function() {
-      $("#wcqs-stats-content").html("❌ Erreur réseau");
-    });
+      .done(function (response) {
+        if (response.success) {
+          displayLiveStats(response.data);
+        } else {
+          $("#wcqs-stats-content").html("❌ Erreur de chargement");
+        }
+      })
+      .fail(function () {
+        $("#wcqs-stats-content").html("❌ Erreur réseau");
+      });
   }
 
   /**
@@ -542,35 +559,49 @@
    */
   function displayLiveStats(data) {
     var html = '<div style="font-size: 13px; line-height: 1.6;">';
-    
+
     html += '<div style="margin-bottom: 10px;">';
-    html += '<strong>📈 Mappings:</strong> ' + data.stats.total_mappings + ' total<br>';
-    html += '✅ Actifs: ' + data.stats.active_mappings + ' | ❌ Inactifs: ' + data.stats.inactive_mappings;
-    html += '</div>';
-    
-    if (data.stats.products_with_issues > 0 || data.stats.pages_with_issues > 0) {
+    html +=
+      "<strong>📈 Mappings:</strong> " +
+      data.stats.total_mappings +
+      " total<br>";
+    html +=
+      "✅ Actifs: " +
+      data.stats.active_mappings +
+      " | ❌ Inactifs: " +
+      data.stats.inactive_mappings;
+    html += "</div>";
+
+    if (
+      data.stats.products_with_issues > 0 ||
+      data.stats.pages_with_issues > 0
+    ) {
       html += '<div style="margin-bottom: 10px; color: #d63638;">';
-      html += '<strong>⚠️ Problèmes détectés:</strong><br>';
+      html += "<strong>⚠️ Problèmes détectés:</strong><br>";
       if (data.stats.products_with_issues > 0) {
-        html += '🛍️ Produits: ' + data.stats.products_with_issues + '<br>';
+        html += "🛍️ Produits: " + data.stats.products_with_issues + "<br>";
       }
       if (data.stats.pages_with_issues > 0) {
-        html += '📄 Pages: ' + data.stats.pages_with_issues + '<br>';
+        html += "📄 Pages: " + data.stats.pages_with_issues + "<br>";
       }
-      html += '</div>';
+      html += "</div>";
     } else {
       html += '<div style="margin-bottom: 10px; color: #00a32a;">';
-      html += '<strong>✅ Tout fonctionne correctement</strong>';
-      html += '</div>';
+      html += "<strong>✅ Tout fonctionne correctement</strong>";
+      html += "</div>";
     }
-    
+
     html += '<div style="font-size: 11px; color: #666;">';
-    html += '🕐 Dernière vérification: ' + data.stats.last_check + '<br>';
-    html += '🔧 WC: ' + (data.wc_active ? 'Actif' : 'Inactif') + ' | GF: ' + (data.gf_active ? 'Actif' : 'Inactif');
-    html += '</div>';
-    
-    html += '</div>';
-    
+    html += "🕐 Dernière vérification: " + data.stats.last_check + "<br>";
+    html +=
+      "🔧 WC: " +
+      (data.wc_active ? "Actif" : "Inactif") +
+      " | GF: " +
+      (data.gf_active ? "Actif" : "Inactif");
+    html += "</div>";
+
+    html += "</div>";
+
     $("#wcqs-stats-content").html(html);
   }
 
@@ -579,23 +610,23 @@
    */
   function performQuickSearch(searchTerm) {
     var searchType = $("#wcqs-search-type").val();
-    
+
     $.post(wcqsAjax.ajaxurl, {
-      action: 'wcqs_quick_search',
+      action: "wcqs_quick_search",
       nonce: ajaxNonce,
       search: searchTerm,
-      type: searchType
+      type: searchType,
     })
-    .done(function(response) {
-      if (response.success) {
-        displaySearchResults(response.data.results);
-      } else {
+      .done(function (response) {
+        if (response.success) {
+          displaySearchResults(response.data.results);
+        } else {
+          displaySearchResults([]);
+        }
+      })
+      .fail(function () {
         displaySearchResults([]);
-      }
-    })
-    .fail(function() {
-      displaySearchResults([]);
-    });
+      });
   }
 
   /**
@@ -603,53 +634,70 @@
    */
   function displaySearchResults(results) {
     var $container = $("#wcqs-search-results");
-    
+
     if (results.length === 0) {
-      $container.html('<div style="padding: 10px; text-align: center; color: #666;">Aucun résultat</div>').show();
+      $container
+        .html(
+          '<div style="padding: 10px; text-align: center; color: #666;">Aucun résultat</div>'
+        )
+        .show();
       return;
     }
-    
-    var html = '';
-    results.forEach(function(result) {
-      html += '<div class="wcqs-search-result" style="padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;" data-id="' + result.id + '">';
-      html += '<div style="font-weight: bold;">#' + result.id + ' - ' + result.title + '</div>';
-      html += '<div style="font-size: 12px; color: #666;">' + result.subtitle + '</div>';
-      html += '</div>';
+
+    var html = "";
+    results.forEach(function (result) {
+      html +=
+        '<div class="wcqs-search-result" style="padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;" data-id="' +
+        result.id +
+        '">';
+      html +=
+        '<div style="font-weight: bold;">#' +
+        result.id +
+        " - " +
+        result.title +
+        "</div>";
+      html +=
+        '<div style="font-size: 12px; color: #666;">' +
+        result.subtitle +
+        "</div>";
+      html += "</div>";
     });
-    
+
     $container.html(html).show();
-    
+
     // Click sur résultat
-    $container.find('.wcqs-search-result').on('click', function() {
-      var id = $(this).data('id');
+    $container.find(".wcqs-search-result").on("click", function () {
+      var id = $(this).data("id");
       var searchType = $("#wcqs-search-type").val();
-      
+
       // Remplit le champ correspondant dans la première ligne vide
-      var $emptyRow = $("#wcqs-rows .wcqs-row").not('[data-template="1"]').filter(function() {
-        if (searchType === 'product') {
-          return $(this).find('input[name*="[product_id]"]').val() === '';
-        } else {
-          return $(this).find('input[name*="[page_id]"]').val() === '';
-        }
-      }).first();
-      
+      var $emptyRow = $("#wcqs-rows .wcqs-row")
+        .not('[data-template="1"]')
+        .filter(function () {
+          if (searchType === "product") {
+            return $(this).find('input[name*="[product_id]"]').val() === "";
+          } else {
+            return $(this).find('input[name*="[page_id]"]').val() === "";
+          }
+        })
+        .first();
+
       if ($emptyRow.length === 0) {
         // Ajoute une nouvelle ligne
         addRow();
         $emptyRow = $("#wcqs-rows .wcqs-row").not('[data-template="1"]').last();
       }
-      
-      if (searchType === 'product') {
-        $emptyRow.find('input[name*="[product_id]"]').val(id).trigger('blur');
+
+      if (searchType === "product") {
+        $emptyRow.find('input[name*="[product_id]"]').val(id).trigger("blur");
       } else {
-        $emptyRow.find('input[name*="[page_id]"]').val(id).trigger('blur');
+        $emptyRow.find('input[name*="[page_id]"]').val(id).trigger("blur");
       }
-      
+
       $container.hide();
-      $("#wcqs-search-input").val('');
-      
-      showToast('success', 'ID ' + id + ' ajouté à la ligne');
+      $("#wcqs-search-input").val("");
+
+      showToast("success", "ID " + id + " ajouté à la ligne");
     });
   }
-
 })(jQuery);
