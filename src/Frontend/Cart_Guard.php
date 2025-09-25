@@ -130,7 +130,12 @@ class Cart_Guard {
      * @return bool
      */
     private function should_block_checkout(): bool {
-        if ( ! \WC()->cart || \WC()->cart->is_empty() ) {
+        // Vérifier que WooCommerce est disponible
+        if ( ! function_exists( 'WC' ) || ! \WC() || ! \WC()->cart ) {
+            return false;
+        }
+        
+        if ( \WC()->cart->is_empty() ) {
             return false;
         }
         
@@ -144,7 +149,7 @@ class Cart_Guard {
      * @return array Tableau des tests requis non validés
      */
     private function get_pending_tests_info(): array {
-        if ( ! \WC()->cart ) {
+        if ( ! function_exists( 'WC' ) || ! \WC() || ! \WC()->cart ) {
             return [];
         }
         
@@ -337,11 +342,15 @@ class Cart_Guard {
         $this->user_validations[ $cache_key ] = $validated;
         
         if ( $validated ) {
-            // Marquer en session aussi
-            WCQS_Session::set_solved( $product_id, 30 );
+            // Marquer en session aussi si WooCommerce est disponible
+            if ( function_exists( 'WC' ) && \WC() ) {
+                WCQS_Session::set_solved( $product_id, 30 );
+            }
         } else {
-            // Supprimer de la session
-            WCQS_Session::unset_solved( $product_id );
+            // Supprimer de la session si WooCommerce est disponible
+            if ( function_exists( 'WC' ) && \WC() ) {
+                WCQS_Session::unset_solved( $product_id );
+            }
         }
     }
     

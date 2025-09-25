@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.6.0';
+	const VERSION = '0.6.2';
 
 	/**
 	 * Flags par défaut du plugin
@@ -188,8 +188,8 @@ class Plugin {
 		}
 
 		// Initialiser le garde du panier (singleton)
-		// Seulement côté front-end et si WooCommerce est actif
-		if ( ! is_admin() && class_exists( 'WooCommerce' ) ) {
+		// Côté front-end et pour WP-CLI (tests) si WooCommerce est actif
+		if ( ( ! is_admin() || ( defined( 'WP_CLI' ) && WP_CLI ) ) && function_exists( 'WC' ) ) {
 			\WcQualiopiSteps\Frontend\Cart_Guard::get_instance();
 		}
 	}
