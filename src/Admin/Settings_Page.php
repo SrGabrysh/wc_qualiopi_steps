@@ -53,57 +53,36 @@ class Settings_Page {
 	 * Traite la soumission du formulaire.
 	 */
 	private static function handle_post(): void {
-		// DEBUG TEMPORAIRE
-		error_log('[WCQS DEBUG] handle_post() appelée');
-		error_log('[WCQS DEBUG] $_POST keys: ' . implode(', ', array_keys($_POST)));
-		
-		try {
-			check_admin_referer( 'wcqs_save_mapping', 'wcqs_nonce' );
-			error_log('[WCQS DEBUG] Nonce OK');
-		} catch (Exception $e) {
-			error_log('[WCQS DEBUG] Nonce ECHEC: ' . $e->getMessage());
-			throw $e;
-		}
+		check_admin_referer( 'wcqs_save_mapping', 'wcqs_nonce' );
 
 		$raw = isset( $_POST['wcqs'] ) && is_array( $_POST['wcqs'] ) ? wp_unslash( $_POST['wcqs'] ) : array();
-		error_log('[WCQS DEBUG] Raw data keys: ' . implode(', ', array_keys($raw)));
 
 		// Normalise les lignes reçues.
 		$lines = isset( $raw['lines'] ) && is_array( $raw['lines'] ) ? $raw['lines'] : array();
-		error_log('[WCQS DEBUG] Lines count: ' . count($lines));
-		error_log('[WCQS DEBUG] Lines keys: ' . implode(', ', array_keys($lines)));
 
 		// Sanitize et valide.
 		$validated_rows = array();
 		$seen_products  = array();
 
 		foreach ( $lines as $i => $line ) {
-			error_log("[WCQS DEBUG] Processing line $i: " . print_r($line, true));
-			
 			$product_id = isset( $line['product_id'] ) ? (int) $line['product_id'] : 0;
 			$page_id    = isset( $line['page_id'] ) ? (int) $line['page_id'] : 0;
 			$gf_id      = isset( $line['gf_form_id'] ) ? (int) $line['gf_form_id'] : 0;
 			$active     = ! empty( $line['active'] );
 			$notes      = isset( $line['notes'] ) ? sanitize_text_field( (string) $line['notes'] ) : '';
 
-			error_log("[WCQS DEBUG] Parsed line $i: product_id=$product_id, page_id=$page_id");
-
 			// Ignore les lignes vides.
 			if ( $product_id <= 0 && $page_id <= 0 && empty( $notes ) ) {
-				error_log("[WCQS DEBUG] Ligne $i ignorée (vide)");
 				continue;
 			}
 
 			// Validations fortes.
 			$err = self::validate_row( $product_id, $page_id );
 			if ( $err ) {
-				error_log("[WCQS DEBUG] Validation échoue ligne $i: $err");
 				self::admin_error( sprintf( /* translators: %s error msg */
 					__( 'Ligne %d: %s', 'wc_qualiopi_steps' ), $i + 1, $err
 				) );
 				continue; // n'insère pas cette ligne
-			} else {
-				error_log("[WCQS DEBUG] Validation OK ligne $i");
 			}
 
 			// Unicité par produit.
@@ -129,12 +108,9 @@ class Settings_Page {
 
 		// Construit la valeur finale à stocker.
 		$value = array( '_version' => 1 ) + $validated_rows;
-		error_log('[WCQS DEBUG] Valeur finale à sauvegarder: ' . print_r($value, true));
-		error_log('[WCQS DEBUG] Nombre de lignes validées: ' . count($validated_rows));
 
 		// IMPORTANT : forcer autoload=no via le 3e paramètre
-		$result = update_option( self::OPTION_KEY, $value, false );
-		error_log('[WCQS DEBUG] update_option result: ' . ($result ? 'SUCCESS' : 'FAILED'));
+		update_option( self::OPTION_KEY, $value, false );
 
 		self::admin_success( __( 'Mapping enregistré.', 'wc_qualiopi_steps' ) );
 	}

@@ -7,6 +7,19 @@
     function addRow() {
       const $tpl = $('tr.wcqs-row[data-template="1"]').first().clone();
       $tpl.removeAttr("data-template");
+      
+      // Générer un ID unique pour cette ligne
+      const uniqueId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      
+      // Remplacer {INDEX} par l'ID unique dans tous les noms de champs
+      $tpl.find('input').each(function() {
+        const $input = $(this);
+        const name = $input.attr('name');
+        if (name && name.includes('{INDEX}')) {
+          $input.attr('name', name.replace('{INDEX}', uniqueId));
+        }
+      });
+      
       // Reset inputs
       $tpl.find('input[type="number"]').val("");
       $tpl.find('input[type="text"]').val("");
