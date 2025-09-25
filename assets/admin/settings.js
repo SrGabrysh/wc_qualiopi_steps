@@ -1,15 +1,12 @@
-/* WCQS Admin Settings JS
- * - Pare-chocs pour $.fn.dialog (si jQuery UI absent quelque part)
- * - Génération d'un rowId unique PAR LIGNE
- * - Ajout / duplication / suppression sans jamais "éclater" les lignes
- * - Normalisation des lignes existantes au chargement (assignation d'un rowId cohérent si besoin)
+/* WCQS Admin Settings JS - version bulletproof
+ * - Pare-chocs $.fn.dialog (si jQuery UI absent)
+ * - Ajout / duplication / suppression sans éclater les lignes
+ * - *** Reindexation des name= au SUBMIT *** (wcqs[lines][0..N]) pour garantir un POST propre
  */
 
-/* Pare-chocs jQuery UI Dialog (évite $(...).dialog is not a function) */
 (function($){
-  if ($ && !$.fn.dialog) {
-    $.fn.dialog = function(){ return this; }; // no-op
-  }
+  // Pare-chocs jQuery UI Dialog (évite $(...).dialog is not a function)
+  if ($ && !$.fn.dialog) { $.fn.dialog = function(){ return this; }; }
 })(window.jQuery);
 
 (function($){
@@ -22,27 +19,6 @@
   function buildRowHtmlFromTemplate(rowId) {
     var tpl = $('#wcqs-row-template').html();
     return tpl.replaceAll('{INDEX}', rowId);
-  }
-
-  // Normalise une ligne : force tous les name="wcqs[lines][{rid}][...]" à partager le même rid
-  function normalizeRow($row, rowId) {
-    if (!rowId) {
-      rowId = $row.attr('data-row-id') || generateRowId();
-      $row.attr('data-row-id', rowId).attr('id', 'wcqs-row-' + rowId);
-    }
-    // Replace tout ancien identifiant détecté dans le HTML
-    var oldIdMatch = $row.prop('outerHTML').match(/wcqs\[lines]\[([^\]]+)\]/);
-    if (oldIdMatch && oldIdMatch[1] !== rowId) {
-      var oldId = oldIdMatch[1];
-      var html  = $row.prop('outerHTML')
-        .replaceAll('[' + oldId + ']', '[' + rowId + ']')
-        .replaceAll('wcqs-row-' + oldId, 'wcqs-row-' + rowId)
-        .replaceAll('data-row-id="' + oldId + '"', 'data-row-id="' + rowId + '"');
-      var $fixed = $(html);
-      $row.replaceWith($fixed);
-      return $fixed;
-    }
-    return $row;
   }
 
   function addRow() {
@@ -59,17 +35,22 @@
     var html  = $sourceRow.prop('outerHTML')
       .replaceAll('[' + oldId + ']', '[' + newId + ']')
       .replaceAll('wcqs-row-' + oldId, 'wcqs-row-' + newId)
-      .replaceAll('data-row-id="' + oldId + '"', 'data-row-id="' + newId + '"')
-      .replace(/value=""/g, 'value=""'); // garde vide, l'admin remplira
+      .replaceAll('data-row-id="' + oldId + '"', 'data-row-id="' + newId + '"');
     var $clone = $(html);
+
+    // Nettoie les valeurs clonées pour éviter des confusions
+    $clone.find('input[name$="[product_id]"]').val('');
+    $clone.find('input[name$="[page_id]"]').val('');
+    $clone.find('input[name$="[gf_form_id]"]').val('0');
+    $clone.find('input[name$="[active]"]').prop('checked', false);
+    $clone.find('input[name$="[notes]"]').val('');
+
     $('#wcqs-rows').append($clone);
     return $clone;
   }
 
   function deleteRow($row) {
-    // Minimum : ne pas supprimer la toute dernière ligne vide pour UX
     if ($('#wcqs-rows .wcqs-row').length <= 1) {
-      // reset inputs
       $row.find('input[type="number"]').val('');
       $row.find('input[type="text"]').val('');
       $row.find('input[type="checkbox"]').prop('checked', false);
@@ -78,42 +59,48 @@
     $row.remove();
   }
 
-  $(document).ready(function(){
-
-    // Normalise toutes les lignes présentes à l'ouverture
+  /**
+   * Reindexe tous les name= en wcqs[lines][0..N][field]
+   * -> Élimine TOTALEMENT le risque de "champs séparés"
+   */
+  function reindexNames() {
+    var i = 0;
     $('#wcqs-rows .wcqs-row').each(function(){
       var $row = $(this);
-      var rid  = $row.attr('data-row-id');
-      if (!rid) {
-        rid = generateRowId();
-        $row.attr('data-row-id', rid).attr('id', 'wcqs-row-' + rid);
-      }
-      var $fixed = normalizeRow($row, rid);
-      if ($fixed !== $row) {
-        $row = $fixed;
-      }
-    });
+      var idx = i++;
 
-    // Ajouter une ligne
-    $('#wcqs-add-row').on('click', function(e){
-      e.preventDefault();
+      $row.attr('data-row-id', 'idx_' + idx).attr('id', 'wcqs-row-idx_' + idx);
+
+      // product_id
+      $row.find('input[name$="[product_id]"]').attr('name', 'wcqs[lines]['+idx+'][product_id]');
+      // page_id
+      $row.find('input[name$="[page_id]"]').attr('name', 'wcqs[lines]['+idx+'][page_id]');
+      // gf_form_id
+      $row.find('input[name$="[gf_form_id]"]').attr('name', 'wcqs[lines]['+idx+'][gf_form_id]');
+      // active (checkbox)
+      $row.find('input[name$="[active]"]').attr('name', 'wcqs[lines]['+idx+'][active]');
+      // notes
+      $row.find('input[name$="[notes]"]').attr('name', 'wcqs[lines]['+idx+'][notes]');
+    });
+  }
+
+  $(document).ready(function(){
+
+    // Si aucune ligne n’existe, on en crée une propre
+    if ($('#wcqs-rows .wcqs-row').length === 0) {
       addRow();
-    });
+    }
 
-    // Dupliquer une ligne
-    $(document).on('click', '.wcqs-duplicate-row', function(e){
-      e.preventDefault();
-      var $row = $(this).closest('.wcqs-row');
-      duplicateRow($row);
-    });
+    // Ajouter / dupliquer / supprimer
+    $('#wcqs-add-row').on('click', function(e){ e.preventDefault(); addRow(); });
+    $(document).on('click', '.wcqs-duplicate-row', function(e){ e.preventDefault(); duplicateRow($(this).closest('.wcqs-row')); });
+    $(document).on('click', '.wcqs-delete-row',    function(e){ e.preventDefault(); deleteRow($(this).closest('.wcqs-row')); });
 
-    // Supprimer une ligne
-    $(document).on('click', '.wcqs-delete-row', function(e){
-      e.preventDefault();
-      var $row = $(this).closest('.wcqs-row');
-      deleteRow($row);
+    // *** Reindex au SUBMIT (clé de voûte) ***
+    $('form').on('submit', function(){
+      reindexNames();
+      return true;
     });
-
   });
 
 })(jQuery);

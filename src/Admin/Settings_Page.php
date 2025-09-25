@@ -55,6 +55,30 @@ class Settings_Page {
 	private static function handle_post(): void {
 		check_admin_referer( 'wcqs_save_mapping', 'wcqs_nonce' );
 
+		// --- DEBUG : journalise un aperçu du POST
+		if ( isset($_POST['wcqs']) ) {
+			$snapshot = $_POST['wcqs'];
+			error_log('[WCQS] POST keys: ' . implode(',', array_keys($snapshot)));
+			if ( isset($snapshot['lines']) && is_array($snapshot['lines']) ) {
+				$dbg = [];
+				foreach ($snapshot['lines'] as $k => $v) {
+					$dbg[] = sprintf(
+						'%s => prod:%s page:%s gf:%s active:%s',
+						is_int($k) ? $k : (string)$k,
+						isset($v['product_id']) ? $v['product_id'] : '-',
+						isset($v['page_id']) ? $v['page_id'] : '-',
+						isset($v['gf_form_id']) ? $v['gf_form_id'] : '-',
+						!empty($v['active']) ? '1' : '0'
+					);
+				}
+				error_log('[WCQS] LINES: ' . implode(' | ', $dbg));
+			} else {
+				error_log('[WCQS] No lines array in POST.');
+			}
+		} else {
+			error_log('[WCQS] No wcqs in POST.');
+		}
+
 		$raw = isset( $_POST['wcqs'] ) && is_array( $_POST['wcqs'] ) ? wp_unslash( $_POST['wcqs'] ) : array();
 
 		// Normalise les lignes reçues.
@@ -126,7 +150,19 @@ class Settings_Page {
 		// IMPORTANT : forcer autoload=no via le 3e paramètre
 		update_option( self::OPTION_KEY, $value, false );
 
-		self::admin_success( __( 'Mapping enregistré.', 'wc_qualiopi_steps' ) );
+		// Message informatif
+		$complete_count = count( $validated_rows );
+		if ( $complete_count > 0 ) {
+			self::admin_success( sprintf(
+				/* translators: %d number of saved lines */
+				__( 'Mapping enregistré avec succès ! %d ligne(s) sauvegardée(s).', 'wc_qualiopi_steps' ),
+				$complete_count
+			) );
+			error_log('[WCQS] SUCCESS: ' . $complete_count . ' lignes sauvegardées');
+		} else {
+			self::admin_error( __( 'Aucune ligne complète détectée. Vérifiez que chaque ligne a bien un Product ID ET un Page ID.', 'wc_qualiopi_steps' ) );
+			error_log('[WCQS] WARNING: Aucune ligne valide trouvée');
+		}
 	}
 
 	/**
