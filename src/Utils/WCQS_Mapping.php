@@ -201,8 +201,10 @@ class WCQS_Mapping {
 			$errors[] = __( 'Test page ID is required', 'wc_qualiopi_steps' );
 		} else {
 			$page = get_post( $page_id );
-			if ( ! $page || $page->post_status !== 'publish' ) {
-				$errors[] = __( 'Test page must exist and be published', 'wc_qualiopi_steps' );
+			if ( ! $page ) {
+				$errors[] = __( 'Test page must exist', 'wc_qualiopi_steps' );
+			} elseif ( ! in_array( $page->post_status, array( 'publish', 'private', 'draft' ) ) ) {
+				$errors[] = __( 'Test page has invalid status', 'wc_qualiopi_steps' );
 			}
 		}
 
