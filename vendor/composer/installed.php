@@ -3,7 +3,7 @@
         'name' => 'tb-web/wc_qualiopi_steps',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'fd00ae6d392e08e25ea324e74bcfa41a01e53a62',
+        'reference' => 'cc5bde483b2a4fcc0196009c295c4fdae6374484',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'tb-web/wc_qualiopi_steps' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'fd00ae6d392e08e25ea324e74bcfa41a01e53a62',
+            'reference' => 'cc5bde483b2a4fcc0196009c295c4fdae6374484',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

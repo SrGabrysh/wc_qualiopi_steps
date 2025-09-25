@@ -17,8 +17,15 @@
   }
 
   function buildRowHtmlFromTemplate(rowId) {
-    var tpl = $('#wcqs-row-template').html();
-    return tpl.replaceAll('{INDEX}', rowId);
+    // Le template est la ligne avec data-template="1"
+    var $templateRow = $('tr.wcqs-row[data-template="1"]').first();
+    if ($templateRow.length === 0) {
+      console.error('Template row with data-template="1" not found');
+      return '';
+    }
+    var html = $templateRow.prop('outerHTML');
+    // Utilise replace avec regex global au lieu de replaceAll (compatibilité)
+    return html.replace(/{INDEX}/g, rowId).replace(/data-template="1"/, '');
   }
 
   function addRow() {
@@ -33,9 +40,9 @@
     var oldId = $sourceRow.attr('data-row-id');
     var newId = generateRowId();
     var html  = $sourceRow.prop('outerHTML')
-      .replaceAll('[' + oldId + ']', '[' + newId + ']')
-      .replaceAll('wcqs-row-' + oldId, 'wcqs-row-' + newId)
-      .replaceAll('data-row-id="' + oldId + '"', 'data-row-id="' + newId + '"');
+      .replace(new RegExp('\\[' + oldId + '\\]', 'g'), '[' + newId + ']')
+      .replace(new RegExp('wcqs-row-' + oldId, 'g'), 'wcqs-row-' + newId)
+      .replace(new RegExp('data-row-id="' + oldId + '"', 'g'), 'data-row-id="' + newId + '"');
     var $clone = $(html);
 
     // Nettoie les valeurs clonées pour éviter des confusions
@@ -50,10 +57,14 @@
   }
 
   function deleteRow($row) {
-    if ($('#wcqs-rows .wcqs-row').length <= 1) {
+    // Ne compte que les lignes visibles (pas le template)
+    var visibleRows = $('#wcqs-rows .wcqs-row').not('[data-template="1"]');
+    
+    if (visibleRows.length <= 1) {
+      // Dernière ligne : juste vider au lieu de supprimer
       $row.find('input[type="number"]').val('');
       $row.find('input[type="text"]').val('');
-      $row.find('input[type="checkbox"]').prop('checked', false);
+      $row.find('input[type="checkbox"]').prop('checked', true); // Actif par défaut
       return;
     }
     $row.remove();
@@ -65,22 +76,23 @@
    */
   function reindexNames() {
     var i = 0;
-    $('#wcqs-rows .wcqs-row').each(function(){
+    // Ne traite que les lignes visibles (pas le template)
+    $('#wcqs-rows .wcqs-row').not('[data-template="1"]').each(function(){
       var $row = $(this);
       var idx = i++;
 
       $row.attr('data-row-id', 'idx_' + idx).attr('id', 'wcqs-row-idx_' + idx);
 
       // product_id
-      $row.find('input[name$="[product_id]"]').attr('name', 'wcqs[lines]['+idx+'][product_id]');
+      $row.find('input[name*="[product_id]"]').attr('name', 'wcqs[lines]['+idx+'][product_id]');
       // page_id
-      $row.find('input[name$="[page_id]"]').attr('name', 'wcqs[lines]['+idx+'][page_id]');
+      $row.find('input[name*="[page_id]"]').attr('name', 'wcqs[lines]['+idx+'][page_id]');
       // gf_form_id
-      $row.find('input[name$="[gf_form_id]"]').attr('name', 'wcqs[lines]['+idx+'][gf_form_id]');
+      $row.find('input[name*="[gf_form_id]"]').attr('name', 'wcqs[lines]['+idx+'][gf_form_id]');
       // active (checkbox)
-      $row.find('input[name$="[active]"]').attr('name', 'wcqs[lines]['+idx+'][active]');
+      $row.find('input[name*="[active]"]').attr('name', 'wcqs[lines]['+idx+'][active]');
       // notes
-      $row.find('input[name$="[notes]"]').attr('name', 'wcqs[lines]['+idx+'][notes]');
+      $row.find('input[name*="[notes]"]').attr('name', 'wcqs[lines]['+idx+'][notes]');
     });
   }
 
@@ -91,10 +103,14 @@
       addRow();
     }
 
-    // Ajouter / dupliquer / supprimer
+    // Ajouter ligne
     $('#wcqs-add-row').on('click', function(e){ e.preventDefault(); addRow(); });
-    $(document).on('click', '.wcqs-duplicate-row', function(e){ e.preventDefault(); duplicateRow($(this).closest('.wcqs-row')); });
-    $(document).on('click', '.wcqs-delete-row',    function(e){ e.preventDefault(); deleteRow($(this).closest('.wcqs-row')); });
+    
+    // Supprimer ligne (utilise le bouton existant wcqs-remove-row)
+    $(document).on('click', '.wcqs-remove-row', function(e){ 
+      e.preventDefault(); 
+      deleteRow($(this).closest('.wcqs-row')); 
+    });
 
     // *** Reindex au SUBMIT (clé de voûte) ***
     $('form').on('submit', function(){

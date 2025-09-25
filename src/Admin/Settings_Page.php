@@ -249,7 +249,7 @@ class Settings_Page {
 			</form>
 
 			<!-- Template caché pour nouvelle ligne -->
-			<table style="display:none;">
+			<table style="display:none;" id="wcqs-template-table">
 				<tbody>
 				<?php self::render_empty_row( true ); ?>
 				</tbody>
