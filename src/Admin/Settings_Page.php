@@ -55,8 +55,10 @@ class Settings_Page {
 	private static function handle_post(): void {
 		check_admin_referer( 'wcqs_save_mapping', 'wcqs_nonce' );
 
-		// --- DEBUG : journalise un aperçu du POST
-		if ( isset($_POST['wcqs']) ) {
+		// DEBUG désactivé en production
+		// Réactiver si besoin en décommentant les lignes ci-dessous :
+		/*
+		if ( defined('WP_DEBUG') && WP_DEBUG && isset($_POST['wcqs']) ) {
 			$snapshot = $_POST['wcqs'];
 			error_log('[WCQS] POST keys: ' . implode(',', array_keys($snapshot)));
 			if ( isset($snapshot['lines']) && is_array($snapshot['lines']) ) {
@@ -72,12 +74,9 @@ class Settings_Page {
 					);
 				}
 				error_log('[WCQS] LINES: ' . implode(' | ', $dbg));
-			} else {
-				error_log('[WCQS] No lines array in POST.');
 			}
-		} else {
-			error_log('[WCQS] No wcqs in POST.');
 		}
+		*/
 
 		$raw = isset( $_POST['wcqs'] ) && is_array( $_POST['wcqs'] ) ? wp_unslash( $_POST['wcqs'] ) : array();
 
@@ -133,7 +132,7 @@ class Settings_Page {
 			$key                   = 'product_' . $product_id;
 			$validated_rows[ $key ] = array(
 				'page_id'    => $page_id,
-				'gf_form_id' => $gf_id > 0 ? $gf_id : null,
+				'gf_form_id' => $gf_id > 0 ? $gf_id : 0, // Normalisation : 0 au lieu de null
 				'active'     => (bool) $active,
 				'notes'      => $notes,
 			);
@@ -158,10 +157,10 @@ class Settings_Page {
 				__( 'Mapping enregistré avec succès ! %d ligne(s) sauvegardée(s).', 'wc_qualiopi_steps' ),
 				$complete_count
 			) );
-			error_log('[WCQS] SUCCESS: ' . $complete_count . ' lignes sauvegardées');
+			// error_log('[WCQS] SUCCESS: ' . $complete_count . ' lignes sauvegardées'); // Debug désactivé
 		} else {
 			self::admin_error( __( 'Aucune ligne complète détectée. Vérifiez que chaque ligne a bien un Product ID ET un Page ID.', 'wc_qualiopi_steps' ) );
-			error_log('[WCQS] WARNING: Aucune ligne valide trouvée');
+			// error_log('[WCQS] WARNING: Aucune ligne valide trouvée'); // Debug désactivé
 		}
 	}
 
