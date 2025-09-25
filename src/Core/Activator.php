@@ -75,6 +75,17 @@ class Activator {
 		}
 
 		// IMPORTANT : forcer autoload=no via update_option(..., false)
+		// Toujours forcer la mise à jour pour corriger l'autoload même si la valeur est identique
 		update_option( 'wcqs_testpos_mapping', $normalized, false );
+		
+		// Double vérification : forcer explicitement l'autoload avec une requête SQL si nécessaire
+		global $wpdb;
+		$wpdb->update( 
+			$wpdb->options, 
+			array( 'autoload' => 'no' ), 
+			array( 'option_name' => 'wcqs_testpos_mapping' ),
+			array( '%s' ),
+			array( '%s' )
+		);
 	}
 }
