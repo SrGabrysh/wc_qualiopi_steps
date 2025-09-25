@@ -64,7 +64,9 @@ class Settings_Page {
 		$validated_rows = array();
 		$seen_products  = array();
 
-		foreach ( $lines as $i => $line ) {
+		// IMPORTANT: Utiliser array_values pour forcer l'indexation numérique (0, 1, 2...)
+		// au lieu des clés string générées par JavaScript (68d52001dc28b, etc.)
+		foreach ( array_values( $lines ) as $i => $line ) {
 			$product_id = isset( $line['product_id'] ) ? (int) $line['product_id'] : 0;
 			$page_id    = isset( $line['page_id'] ) ? (int) $line['page_id'] : 0;
 			$gf_id      = isset( $line['gf_form_id'] ) ? (int) $line['gf_form_id'] : 0;
