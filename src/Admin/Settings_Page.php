@@ -225,27 +225,27 @@ class Settings_Page {
 		<tr class="wcqs-row"<?php echo $attr; // phpcs:ignore ?>>
 			<td>
 				<input type="number" min="1" class="small-text"
-					name="wcqs[lines][][product_id]" value="<?php echo esc_attr( $product_id ); ?>" />
+					name="wcqs[lines][<?php echo $template ? '{INDEX}' : uniqid(); ?>][product_id]" value="<?php echo esc_attr( $product_id ); ?>" />
 				<p class="description"><?php esc_html_e( 'ID du produit WooCommerce', 'wc_qualiopi_steps' ); ?></p>
 			</td>
 			<td>
 				<input type="number" min="1" class="small-text"
-					name="wcqs[lines][][page_id]" value="<?php echo esc_attr( (int) ( $data['page_id'] ?? 0 ) ); ?>" />
+					name="wcqs[lines][<?php echo $template ? '{INDEX}' : uniqid(); ?>][page_id]" value="<?php echo esc_attr( (int) ( $data['page_id'] ?? 0 ) ); ?>" />
 				<p class="description"><?php esc_html_e( 'ID de la page WordPress publiée', 'wc_qualiopi_steps' ); ?></p>
 			</td>
 			<td>
 				<input type="number" min="0" class="small-text"
-					name="wcqs[lines][][gf_form_id]" value="<?php echo esc_attr( (int) ( $data['gf_form_id'] ?? 0 ) ); ?>" />
+					name="wcqs[lines][<?php echo $template ? '{INDEX}' : uniqid(); ?>][gf_form_id]" value="<?php echo esc_attr( (int) ( $data['gf_form_id'] ?? 0 ) ); ?>" />
 			</td>
 			<td style="text-align:center;">
 				<label>
 					<input type="checkbox"
-						name="wcqs[lines][][active]" <?php checked( ! empty( $data['active'] ) ); ?> />
+						name="wcqs[lines][<?php echo $template ? '{INDEX}' : uniqid(); ?>][active]" <?php checked( ! empty( $data['active'] ) ); ?> />
 				</label>
 			</td>
 			<td>
 				<input type="text" class="regular-text"
-					name="wcqs[lines][][notes]" value="<?php echo esc_attr( (string) ( $data['notes'] ?? '' ) ); ?>" />
+					name="wcqs[lines][<?php echo $template ? '{INDEX}' : uniqid(); ?>][notes]" value="<?php echo esc_attr( (string) ( $data['notes'] ?? '' ) ); ?>" />
 			</td>
 			<td>
 				<button type="button" class="button wcqs-remove-row"><?php esc_html_e( 'Supprimer', 'wc_qualiopi_steps' ); ?></button>
