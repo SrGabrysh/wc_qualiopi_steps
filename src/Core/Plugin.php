@@ -98,8 +98,13 @@ class Plugin {
 		// Hooks admin pour l'étape 1
 		if ( is_admin() ) {
 			add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
-			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-		}
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+
+		// Initialise AJAX handlers
+		\WcQualiopiSteps\Admin\Ajax_Handler::init();
+		\WcQualiopiSteps\Admin\Csv_Handler::init();
+		\WcQualiopiSteps\Admin\Live_Control::init();
+	}
 
 		// Chargement des modules.
 		$this->load_modules();
@@ -260,5 +265,11 @@ class Plugin {
 			WC_QUALIOPI_STEPS_VERSION,
 			true
 		);
+
+		// Variables AJAX pour JavaScript
+		wp_localize_script( 'wcqs-admin', 'wcqsAjax', array(
+			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( 'wcqs_ajax_nonce' )
+		) );
 	}
 }

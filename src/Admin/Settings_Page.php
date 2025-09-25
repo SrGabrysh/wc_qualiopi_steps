@@ -247,6 +247,76 @@ class Settings_Page {
 				</p>
 			</form>
 
+			<!-- Section Import/Export CSV -->
+			<!-- Section Contrôle Live -->
+			<div class="wcqs-live-section" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+				<h2><?php esc_html_e( 'Contrôle Live', 'wc_qualiopi_steps' ); ?></h2>
+				<p class="description">
+					<?php esc_html_e( 'Surveillance en temps réel de l\'état des mappings et recherche rapide.', 'wc_qualiopi_steps' ); ?>
+				</p>
+
+				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 15px 0;">
+					<!-- Statistiques live -->
+					<div class="wcqs-live-stats" style="background: #f9f9f9; padding: 15px; border-radius: 4px;">
+						<h3 style="margin-top: 0;">📊 Statistiques Live</h3>
+						<div id="wcqs-stats-content">
+							<p>🔄 Chargement...</p>
+						</div>
+						<button type="button" class="button button-small" id="wcqs-refresh-stats">
+							🔄 Actualiser
+						</button>
+					</div>
+
+					<!-- Recherche rapide -->
+					<div class="wcqs-quick-search" style="background: #f9f9f9; padding: 15px; border-radius: 4px;">
+						<h3 style="margin-top: 0;">🔍 Recherche Rapide</h3>
+						<div style="margin-bottom: 10px;">
+							<select id="wcqs-search-type" style="margin-right: 10px;">
+								<option value="product">Produits</option>
+								<option value="page">Pages</option>
+							</select>
+							<input type="text" id="wcqs-search-input" placeholder="Rechercher..." style="width: 200px;">
+						</div>
+						<div id="wcqs-search-results" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; background: white; border-radius: 3px; display: none;">
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="wcqs-csv-section" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+				<h2><?php esc_html_e( 'Import/Export CSV', 'wc_qualiopi_steps' ); ?></h2>
+				<p class="description">
+					<?php esc_html_e( 'Gérez vos mappings en lot via fichier CSV (Excel compatible).', 'wc_qualiopi_steps' ); ?>
+				</p>
+
+				<div style="display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0;">
+					<button type="button" class="button" id="wcqs-export-csv">
+						📥 <?php esc_html_e( 'Exporter CSV', 'wc_qualiopi_steps' ); ?>
+					</button>
+					
+					<button type="button" class="button" id="wcqs-download-template">
+						📋 <?php esc_html_e( 'Télécharger Template', 'wc_qualiopi_steps' ); ?>
+					</button>
+					
+					<div style="display: inline-block;">
+						<input type="file" id="wcqs-csv-file" accept=".csv" style="display: none;">
+						<button type="button" class="button" id="wcqs-import-csv">
+							📤 <?php esc_html_e( 'Importer CSV', 'wc_qualiopi_steps' ); ?>
+						</button>
+					</div>
+				</div>
+
+				<div id="wcqs-csv-progress" style="display: none; margin: 10px 0;">
+					<div style="background: #f1f1f1; border-radius: 3px; padding: 3px;">
+						<div style="background: #0073aa; height: 20px; border-radius: 3px; width: 0%; transition: width 0.3s;"></div>
+					</div>
+					<p style="margin: 5px 0; font-size: 13px;"></p>
+				</div>
+			</div>
+
+			<form method="post" style="display: none;">
+			</form>
+
 			<!-- Template caché pour nouvelle ligne -->
 			<table style="display:none;" id="wcqs-template-table">
 				<tbody>
