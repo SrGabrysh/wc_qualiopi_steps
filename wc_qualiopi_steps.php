@@ -3,7 +3,7 @@
  * Plugin Name: WC Qualiopi Steps
  * Plugin URI: https://github.com/SrGabrysh/wc_qualiopi_steps
  * Description: WC Qualiopi Steps est un plugin WooCommerce qui impose un test de positionnement (Qualiopi) avant paiement. Mapping produit→page de test via page d’options, jeton HMAC + session, garde checkout, logs d’audit et page fallback. Développement step-by-step, SRP, UX accessible.
- * Version: 0.3.5
+ * Version: 0.3.7
  * Author: TB-Web
  * Author URI: https://tb-web.fr
  * License: GPL v2 or later
@@ -19,11 +19,19 @@
 // Sécurité : Empêcher l'accès direct.
 defined( 'ABSPATH' ) || exit;
 
-// Constantes du plugin.
-define( 'WC_QUALIOPI_STEPS_VERSION', '0.3.5' );
-define( 'WC_QUALIOPI_STEPS_PLUGIN_FILE', __FILE__ );
-define( 'WC_QUALIOPI_STEPS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'WC_QUALIOPI_STEPS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+// Constantes du plugin avec vérification pour éviter les warnings "already defined"
+if ( ! defined( 'WC_QUALIOPI_STEPS_VERSION' ) ) {
+	define( 'WC_QUALIOPI_STEPS_VERSION', '0.3.7' );
+}
+if ( ! defined( 'WC_QUALIOPI_STEPS_PLUGIN_FILE' ) ) {
+	define( 'WC_QUALIOPI_STEPS_PLUGIN_FILE', __FILE__ );
+}
+if ( ! defined( 'WC_QUALIOPI_STEPS_PLUGIN_DIR' ) ) {
+	define( 'WC_QUALIOPI_STEPS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+}
+if ( ! defined( 'WC_QUALIOPI_STEPS_PLUGIN_URL' ) ) {
+	define( 'WC_QUALIOPI_STEPS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+}
 
 // Vérifications préalables propres
 function wc_qualiopi_steps_check_requirements() {

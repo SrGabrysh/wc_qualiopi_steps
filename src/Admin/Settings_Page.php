@@ -28,10 +28,8 @@ class Settings_Page {
 				self::handle_post();
 			}
 
-			$mapping = get_option( self::OPTION_KEY, array( '_version' => 1 ) );
-			if ( ! is_array( $mapping ) ) {
-				$mapping = array( '_version' => 1 );
-			}
+		// Utilise le helper sûr du Plugin principal
+		$mapping = \WcQualiopiSteps\Core\Plugin::get_mapping();
 
 			// Retire la clé interne _version de l'affichage.
 			$rows = array_filter(
@@ -111,8 +109,8 @@ class Settings_Page {
 		// Construit la valeur finale à stocker.
 		$value = array( '_version' => 1 ) + $validated_rows;
 
-		// IMPORTANT : update_option conserve autoload=no (mis lors de add_option en step 0).
-		update_option( self::OPTION_KEY, $value );
+		// IMPORTANT : forcer autoload=no via le 3e paramètre
+		update_option( self::OPTION_KEY, $value, false );
 
 		self::admin_success( __( 'Mapping enregistré.', 'wc_qualiopi_steps' ) );
 	}

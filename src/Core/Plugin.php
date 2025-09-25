@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.3.0';
+	const VERSION = '0.3.6';
 
 	/**
 	 * Flags par défaut du plugin
@@ -88,6 +88,9 @@ class Plugin {
 	 * Initialisation du plugin
 	 */
 	private function init() {
+		// Normalisation des options au chargement
+		$this->normalize_options();
+
 		// Hooks WordPress.
 		add_action( 'init', array( $this, 'on_init' ) );
 		add_action( 'admin_init', array( $this, 'on_admin_init' ) );
@@ -135,6 +138,61 @@ class Plugin {
 	 */
 	public function get_version() {
 		return self::VERSION;
+	}
+
+	/**
+	 * Normalise les options au chargement pour corriger les formats incorrects
+	 */
+	private function normalize_options(): void {
+		$raw = get_option( 'wcqs_testpos_mapping', null );
+		if ( $raw !== null ) {
+			$this->normalize_mapping_option( $raw );
+		}
+	}
+
+	/**
+	 * Normalise l'option wcqs_testpos_mapping
+	 */
+	private function normalize_mapping_option( $raw ): void {
+		$normalized = null;
+
+		if ( is_string( $raw ) ) {
+			// Cas bug actuel : valeur stockée en JSON string → décoder
+			$decoded = json_decode( $raw, true );
+			if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+				$normalized = $decoded;
+			} else {
+				// Valeur illisible → repartir sur une base saine
+				$normalized = array( '_version' => 1 );
+			}
+		} elseif ( is_array( $raw ) ) {
+			$normalized = $raw;
+		} else {
+			// Types inattendus → valeur minimale
+			$normalized = array( '_version' => 1 );
+		}
+
+		// IMPORTANT : forcer autoload=no via update_option(..., false)
+		update_option( 'wcqs_testpos_mapping', $normalized, false );
+	}
+
+	/**
+	 * Helper sûr pour lire le mapping (toujours un array)
+	 */
+	public static function get_mapping(): array {
+		$raw = get_option( 'wcqs_testpos_mapping', array() );
+		if ( is_array( $raw ) ) {
+			return $raw;
+		}
+		$decoded = json_decode( (string) $raw, true );
+		if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+			// auto-réparation en base pour éviter de retomber dans le piège
+			update_option( 'wcqs_testpos_mapping', $decoded, false );
+			return $decoded;
+		}
+		// Valeur corrompue → base minimale
+		update_option( 'wcqs_testpos_mapping', array( '_version' => 1 ), false );
+		return array( '_version' => 1 );
 	}
 
 	/**
