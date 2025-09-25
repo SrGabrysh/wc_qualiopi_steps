@@ -1,0 +1,167 @@
+/**
+ * Cart Guard CSS - WC Qualiopi Steps
+ * Styles pour l'UX panier avec CTA test de positionnement
+ * 
+ * @package WcQualiopiSteps
+ * @since 0.6.0
+ */
+
+/* Notice de test requis */
+.wcqs-test-notice {
+    margin: 1em 0;
+}
+
+.wcqs-test-notice .woocommerce-message {
+    border-left-color: #2ea2cc;
+    background-color: #f7fcfe;
+}
+
+.wcqs-test-notice .woocommerce-message::before {
+    content: "\f348"; /* Icône dashicons-book-alt */
+    color: #2ea2cc;
+}
+
+/* CTA Passer le test */
+.wcqs-test-cta {
+    background-color: #2ea2cc !important;
+    border-color: #0073aa !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    text-decoration: none !important;
+    display: inline-block;
+    padding: 0.75em 1.5em;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.wcqs-test-cta:hover,
+.wcqs-test-cta:focus {
+    background-color: #0073aa !important;
+    border-color: #005177 !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 115, 170, 0.3);
+}
+
+.wcqs-test-cta:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 115, 170, 0.3);
+}
+
+/* Message de checkout bloqué */
+.wcqs-checkout-blocked {
+    margin: 1em 0;
+}
+
+.wcqs-checkout-blocked .woocommerce-info {
+    border-left-color: #ffb900;
+    background-color: #fffcf0;
+}
+
+.wcqs-checkout-blocked .woocommerce-info::before {
+    content: "\f160"; /* Icône dashicons-lock */
+    color: #ffb900;
+}
+
+/* Test indisponible */
+.wcqs-test-unavailable {
+    margin: 1em 0;
+}
+
+.wcqs-test-unavailable .woocommerce-error {
+    border-left-color: #dc3232;
+    background-color: #fef7f7;
+}
+
+.wcqs-test-unavailable .woocommerce-error::before {
+    content: "\f534"; /* Icône dashicons-warning */
+    color: #dc3232;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .wcqs-test-cta {
+        display: block;
+        text-align: center;
+        width: 100%;
+        margin-top: 0.5em;
+    }
+    
+    .wcqs-test-notice .woocommerce-message,
+    .wcqs-checkout-blocked .woocommerce-info,
+    .wcqs-test-unavailable .woocommerce-error {
+        padding: 1em;
+        font-size: 0.95em;
+    }
+}
+
+/* Accessibilité */
+.wcqs-test-cta:focus {
+    outline: 2px solid #005177;
+    outline-offset: 2px;
+}
+
+/* Animation d'apparition */
+.wcqs-test-notice,
+.wcqs-checkout-blocked,
+.wcqs-test-unavailable {
+    animation: wcqsFadeIn 0.3s ease-in-out;
+}
+
+@keyframes wcqsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* États de chargement */
+.wcqs-test-cta.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.wcqs-test-cta.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: wcqsSpinner 1s linear infinite;
+}
+
+@keyframes wcqsSpinner {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Thème sombre (si supporté) */
+@media (prefers-color-scheme: dark) {
+    .wcqs-test-notice .woocommerce-message {
+        background-color: #1a2332;
+        border-left-color: #4f94cd;
+        color: #e0e0e0;
+    }
+    
+    .wcqs-checkout-blocked .woocommerce-info {
+        background-color: #2d2416;
+        border-left-color: #ffa000;
+        color: #e0e0e0;
+    }
+    
+    .wcqs-test-unavailable .woocommerce-error {
+        background-color: #2d1618;
+        border-left-color: #f44336;
+        color: #e0e0e0;
+    }
+}

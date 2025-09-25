@@ -1,6 +1,6 @@
 # WC Qualiopi Steps
 
-**Version:** 0.5.5  
+**Version:** 0.6.1  
 **Auteur:** TB-Web
 
 ## Description
@@ -13,6 +13,19 @@ WC Qualiopi Steps est un plugin WooCommerce qui impose un test de positionnement
 2. Activez-le dans l'administration WordPress
 
 ## Changelog
+
+### v0.6.0 (2025-09-25)
+
+- **Étape 3 terminée** : UX panier avec garde checkout
+- **Nouveautés** :
+  - Classe `Cart_Guard` : Masquage bouton Commander si test non validé
+  - CTA "Passer le test" avec redirection automatique vers page de test
+  - Messages accessibles avec `role="alert"` et `aria-live`
+  - CSS responsive avec animations et support thème sombre
+  - Intégration hooks WooCommerce pour UX fluide
+  - Gestion fallback si page de test indisponible
+  - Cache validation utilisateur pour optimiser performances
+  - Support feature flag `enforce_cart` pour activation/désactivation
 
 ### v0.5.0 (2025-09-25)
 

@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.5.4';
+	const VERSION = '0.6.0';
 
 	/**
 	 * Flags par défaut du plugin
@@ -135,6 +135,9 @@ class Plugin {
 	private function load_modules() {
 		// Initialiser les utilitaires de l'étape 2
 		$this->init_step2_utilities();
+		
+		// Initialiser le garde du panier de l'étape 3
+		$this->init_step3_cart_guard();
 	}
 
 	/**
@@ -167,6 +170,27 @@ class Plugin {
 				   . esc_html__( 'WCQS: Mapping class not found. Check autoload.', 'wc_qualiopi_steps' )
 				   . '</p></div>';
 			});
+		}
+	}
+
+	/**
+	 * Initialise le garde du panier de l'étape 3 (Cart Guard)
+	 */
+	private function init_step3_cart_guard() {
+		// Vérifier la disponibilité de la classe
+		if ( ! class_exists( '\\WcQualiopiSteps\\Frontend\\Cart_Guard' ) ) {
+			add_action( 'admin_notices', function() {
+				echo '<div class="notice notice-error"><p>' 
+				   . esc_html__( 'WCQS: Cart_Guard class not found. Check autoload.', 'wc_qualiopi_steps' )
+				   . '</p></div>';
+			});
+			return;
+		}
+
+		// Initialiser le garde du panier (singleton)
+		// Seulement côté front-end et si WooCommerce est actif
+		if ( ! is_admin() && class_exists( 'WooCommerce' ) ) {
+			\WcQualiopiSteps\Frontend\Cart_Guard::get_instance();
 		}
 	}
 
