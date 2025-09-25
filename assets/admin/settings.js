@@ -8,24 +8,18 @@
       const $tpl = $('tr.wcqs-row[data-template="1"]').first().clone();
       $tpl.removeAttr("data-template");
 
-      // Générer un ID unique pour cette ligne
-      const uniqueId =
-        Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+      // CORRECTIF: Générer UN SEUL ID unique pour TOUTE la ligne
+      const uniqueId = 'r_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
 
-      // Remplacer {INDEX} par l'ID unique dans tous les noms de champs
-      $tpl.find("input").each(function () {
-        const $input = $(this);
-        const name = $input.attr("name");
-        if (name && name.includes("{INDEX}")) {
-          $input.attr("name", name.replace("{INDEX}", uniqueId));
-        }
-      });
-
+      // Remplacer {INDEX} par l'ID unique dans TOUT le HTML de la ligne
+      const newHtml = $tpl.prop('outerHTML').replace(/{INDEX}/g, uniqueId);
+      const $newRow = $(newHtml);
+      
       // Reset inputs
-      $tpl.find('input[type="number"]').val("");
-      $tpl.find('input[type="text"]').val("");
-      $tpl.find('input[type="checkbox"]').prop("checked", true);
-      $tbody.append($tpl);
+      $newRow.find('input[type="number"]').val("");
+      $newRow.find('input[type="text"]').val("");
+      $newRow.find('input[type="checkbox"]').prop("checked", true);
+      $tbody.append($newRow);
     }
 
     $add.on("click", addRow);

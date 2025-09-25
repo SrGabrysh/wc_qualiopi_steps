@@ -78,6 +78,15 @@ class Settings_Page {
 				continue;
 			}
 
+			// GARDE-FOU: Détecte les lignes "explosées" par un mauvais rowId côté JS
+			if ( ( $product_id > 0 ) xor ( $page_id > 0 ) ) {
+				self::admin_error( sprintf(
+					__( 'Ligne %d: Champs séparés détectés (bug JavaScript corrigé). Rechargez la page.', 'wc_qualiopi_steps' ),
+					$i + 1
+				) );
+				continue;
+			}
+
 			// Validations fortes.
 			$err = self::validate_row( $product_id, $page_id );
 			if ( $err ) {
