@@ -63,6 +63,7 @@ class Settings_Page {
 		// Sanitize et valide.
 		$validated_rows = array();
 		$seen_products  = array();
+		$split_detected = false;
 
 		// IMPORTANT: Utiliser array_values pour forcer l'indexation numérique (0, 1, 2...)
 		// au lieu des clés string générées par JavaScript (68d52001dc28b, etc.)
@@ -80,11 +81,8 @@ class Settings_Page {
 
 			// GARDE-FOU: Détecte les lignes "explosées" par un mauvais rowId côté JS
 			if ( ( $product_id > 0 ) xor ( $page_id > 0 ) ) {
-				self::admin_error( sprintf(
-					__( 'Ligne %d: Champs séparés détectés (bug JavaScript corrigé). Rechargez la page.', 'wc_qualiopi_steps' ),
-					$i + 1
-				) );
-				continue;
+				$split_detected = true;
+				continue; // Ignore cette ligne incomplète
 			}
 
 			// Validations fortes.
@@ -117,13 +115,32 @@ class Settings_Page {
 			);
 		}
 
+		// Affichage de la notice unique pour les champs séparés
+		if ( $split_detected ) {
+			add_settings_error(
+				'wcqs',
+				'wcqs_split_detected',
+				__( 'Champs séparés détectés (ancien bug JS). Rechargez la page puis réessayez — les nouvelles lignes seront correctes.', 'wc_qualiopi_steps' ),
+				'error'
+			);
+		}
+
 		// Construit la valeur finale à stocker.
 		$value = array( '_version' => 1 ) + $validated_rows;
 
 		// IMPORTANT : forcer autoload=no via le 3e paramètre
 		update_option( self::OPTION_KEY, $value, false );
 
-		self::admin_success( __( 'Mapping enregistré.', 'wc_qualiopi_steps' ) );
+		add_settings_error(
+			'wcqs',
+			'wcqs_mapping_saved',
+			__( 'Mapping enregistré.', 'wc_qualiopi_steps' ),
+			'success'
+		);
+
+		// Redirection pour éviter les doublons d'alertes (pattern WordPress)
+		wp_safe_redirect( add_query_arg( 'settings-updated', 'true', wp_get_referer() ?: admin_url( 'options-general.php?page=wcqs-settings' ) ) );
+		exit;
 	}
 
 	/**
@@ -171,6 +188,13 @@ class Settings_Page {
 		<div class="wrap wcqs-wrap">
 			<h1><?php echo $title; ?></h1>
 			<p class="description"><?php echo $desc; ?></p>
+			
+			<?php
+			// Affichage des messages de succès/erreur
+			if ( isset( $_GET['settings-updated'] ) ) {
+				settings_errors( 'wcqs' );
+			}
+			?>
 
 			<form method="post">
 				<?php wp_nonce_field( 'wcqs_save_mapping', 'wcqs_nonce' ); ?>

@@ -242,6 +242,10 @@ class Plugin {
 			return;
 		}
 
+		// CORRECTIF: Charger jQuery UI Dialog pour éviter les erreurs LearnDash
+		wp_enqueue_script( 'jquery-ui-dialog' );
+		wp_enqueue_style( 'wp-jquery-ui-dialog' );
+
 		wp_enqueue_style(
 			'wcqs-admin',
 			plugins_url( 'assets/admin/settings.css', WC_QUALIOPI_STEPS_PLUGIN_FILE ),
@@ -252,7 +256,7 @@ class Plugin {
 		wp_enqueue_script(
 			'wcqs-admin',
 			plugins_url( 'assets/admin/settings.js', WC_QUALIOPI_STEPS_PLUGIN_FILE ),
-			array( 'jquery' ),
+			array( 'jquery', 'jquery-ui-dialog' ),
 			WC_QUALIOPI_STEPS_VERSION,
 			true
 		);

@@ -9,12 +9,13 @@
       $tpl.removeAttr("data-template");
 
       // CORRECTIF: Générer UN SEUL ID unique pour TOUTE la ligne
-      const uniqueId = 'r_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+      const uniqueId =
+        "r_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
 
       // Remplacer {INDEX} par l'ID unique dans TOUT le HTML de la ligne
-      const newHtml = $tpl.prop('outerHTML').replace(/{INDEX}/g, uniqueId);
+      const newHtml = $tpl.prop("outerHTML").replace(/{INDEX}/g, uniqueId);
       const $newRow = $(newHtml);
-      
+
       // Reset inputs
       $newRow.find('input[type="number"]').val("");
       $newRow.find('input[type="text"]').val("");
