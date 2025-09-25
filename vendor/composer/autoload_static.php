@@ -29,6 +29,9 @@ class ComposerStaticInit58a7b121a92b59f69a75bb1e4d2a0994
         'WcQualiopiSteps\\Core\\Activator' => __DIR__ . '/../..' . '/src/Core/Activator.php',
         'WcQualiopiSteps\\Core\\Deactivator' => __DIR__ . '/../..' . '/src/Core/Deactivator.php',
         'WcQualiopiSteps\\Core\\Plugin' => __DIR__ . '/../..' . '/src/Core/Plugin.php',
+        'WcQualiopiSteps\\Security\\WCQS_Token' => __DIR__ . '/../..' . '/src/Security/WCQS_Token.php',
+        'WcQualiopiSteps\\Utils\\WCQS_Mapping' => __DIR__ . '/../..' . '/src/Utils/WCQS_Mapping.php',
+        'WcQualiopiSteps\\Utils\\WCQS_Session' => __DIR__ . '/../..' . '/src/Utils/WCQS_Session.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

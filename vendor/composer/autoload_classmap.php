@@ -14,4 +14,7 @@ return array(
     'WcQualiopiSteps\\Core\\Activator' => $baseDir . '/src/Core/Activator.php',
     'WcQualiopiSteps\\Core\\Deactivator' => $baseDir . '/src/Core/Deactivator.php',
     'WcQualiopiSteps\\Core\\Plugin' => $baseDir . '/src/Core/Plugin.php',
+    'WcQualiopiSteps\\Security\\WCQS_Token' => $baseDir . '/src/Security/WCQS_Token.php',
+    'WcQualiopiSteps\\Utils\\WCQS_Mapping' => $baseDir . '/src/Utils/WCQS_Mapping.php',
+    'WcQualiopiSteps\\Utils\\WCQS_Session' => $baseDir . '/src/Utils/WCQS_Session.php',
 );

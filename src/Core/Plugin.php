@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.4.0';
+	const VERSION = '0.5.0';
 
 	/**
 	 * Flags par défaut du plugin
@@ -133,7 +133,41 @@ class Plugin {
 	 * Chargement des modules du plugin
 	 */
 	private function load_modules() {
-		// Charger les modules selon les besoins.
+		// Initialiser les utilitaires de l'étape 2
+		$this->init_step2_utilities();
+	}
+
+	/**
+	 * Initialise les utilitaires de l'étape 2 (Token, Session, Mapping)
+	 */
+	private function init_step2_utilities() {
+		// Les classes sont chargées automatiquement via PSR-4
+		// Elles sont disponibles statiquement, pas besoin d'instanciation
+		
+		// Vérifier la disponibilité des classes
+		if ( ! class_exists( '\\WcQualiopiSteps\\Security\\WCQS_Token' ) ) {
+			add_action( 'admin_notices', function() {
+				echo '<div class="notice notice-error"><p>' 
+				   . esc_html__( 'WCQS: Token class not found. Check autoload.', 'wc_qualiopi_steps' )
+				   . '</p></div>';
+			});
+		}
+
+		if ( ! class_exists( '\\WcQualiopiSteps\\Utils\\WCQS_Session' ) ) {
+			add_action( 'admin_notices', function() {
+				echo '<div class="notice notice-error"><p>' 
+				   . esc_html__( 'WCQS: Session class not found. Check autoload.', 'wc_qualiopi_steps' )
+				   . '</p></div>';
+			});
+		}
+
+		if ( ! class_exists( '\\WcQualiopiSteps\\Utils\\WCQS_Mapping' ) ) {
+			add_action( 'admin_notices', function() {
+				echo '<div class="notice notice-error"><p>' 
+				   . esc_html__( 'WCQS: Mapping class not found. Check autoload.', 'wc_qualiopi_steps' )
+				   . '</p></div>';
+			});
+		}
 	}
 
 	/**
