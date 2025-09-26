@@ -785,7 +785,7 @@ class Cart_Guard {
         
         error_log( "[WCQS] Cart_Guard DEBUG: cart_page=true, enforcement={$enforcement_enabled}, should_block={$should_block}, cart_items={$cart_count}, pending_tests=" . count( $pending_tests ) );
         
-        // Ajouter debug JavaScript
+        // Ajouter debug JavaScript + forçage affichage bouton
         ?>
         <script type="text/javascript">
         console.log('=== WCQS Cart_Guard Debug (Expert Fix) ===');
@@ -794,6 +794,91 @@ class Cart_Guard {
         console.log('Cart items count:', <?php echo $cart_count; ?>);
         console.log('Pending tests count:', <?php echo count( $pending_tests ); ?>);
         console.log('Pending tests:', <?php echo json_encode( $pending_tests ); ?>);
+        
+        // FORCER AFFICHAGE BOUTON CHECKOUT SI BACKEND AUTORISE
+        <?php if ( ! $should_block ): ?>
+        console.log('🚀 Backend autorise checkout - Forçage affichage bouton...');
+        
+        function forceShowCheckoutButton() {
+            // Rechercher tous les boutons checkout possibles
+            const selectors = [
+                '.wc-block-cart__submit-button',
+                '.wc-block-checkout__actions_row .wc-block-components-checkout-place-order-button',
+                '.wc-block-components-checkout-place-order-button',
+                '.checkout-button',
+                'a[href*="commander"]',
+                'a[href*="checkout"]',
+                '.wc-proceed-to-checkout a'
+            ];
+            
+            let buttonFound = false;
+            selectors.forEach(function(selector) {
+                const buttons = document.querySelectorAll(selector);
+                buttons.forEach(function(button) {
+                    if (button) {
+                        // Supprimer tous les attributs bloquants
+                        button.removeAttribute('disabled');
+                        button.removeAttribute('aria-disabled');
+                        
+                        // Forcer l'affichage
+                        button.style.display = 'block';
+                        button.style.visibility = 'visible';
+                        button.style.opacity = '1';
+                        button.style.pointerEvents = 'auto';
+                        button.style.cursor = 'pointer';
+                        
+                        // Supprimer les classes qui peuvent bloquer
+                        button.classList.remove('disabled', 'is-disabled');
+                        
+                        console.log('✅ Bouton checkout forcé visible (' + selector + '):', button);
+                        buttonFound = true;
+                    }
+                });
+            });
+            
+            if (!buttonFound) {
+                console.log('⚠️ Aucun bouton checkout trouvé avec les sélecteurs standards');
+            }
+            
+            // Supprimer les messages de blocage éventuels
+            const blockingSelectors = [
+                '.wc-block-components-notice-banner',
+                '.woocommerce-error',
+                '.woocommerce-message',
+                '.wcqs-checkout-blocked',
+                '[role="alert"]'
+            ];
+            
+            blockingSelectors.forEach(function(selector) {
+                const messages = document.querySelectorAll(selector);
+                messages.forEach(function(msg) {
+                    if (msg.textContent && (msg.textContent.includes('test') || msg.textContent.includes('requis') || msg.textContent.includes('positionnement'))) {
+                        msg.style.display = 'none';
+                        console.log('🗑️ Message de blocage masqué:', msg.textContent.substring(0, 50) + '...');
+                    }
+                });
+            });
+        }
+        
+        // Exécuter immédiatement
+        forceShowCheckoutButton();
+        
+        // Réexécuter après chargement complet
+        document.addEventListener('DOMContentLoaded', forceShowCheckoutButton);
+        
+        // Réexécuter périodiquement pendant 5 secondes (pour les Blocks qui se chargent tard)
+        let forceChecks = 0;
+        const forceInterval = setInterval(function() {
+            forceChecks++;
+            forceShowCheckoutButton();
+            
+            if (forceChecks >= 10) { // 10 * 500ms = 5 secondes
+                clearInterval(forceInterval);
+                console.log('🏁 Fin du forçage périodique du bouton checkout');
+            }
+        }, 500);
+        
+        <?php endif; ?>
         </script>
         <?php
     }
