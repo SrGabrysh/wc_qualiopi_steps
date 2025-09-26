@@ -874,17 +874,26 @@ class Cart_Guard {
         console.log('    - Page ID: <?php echo $detail['page_id'] ?? 'null'; ?>');
         <?php endforeach; ?>
         
-        // LOGIQUE CORRECTE : Forcer affichage SEULEMENT si tests validés ET enforcement activé
-        <?php 
-        $should_force_show = $enforcement_enabled && ! $should_block && count( $pending_tests ) === 0;
-        $has_validated_tests = false;
-        foreach ( $validation_details as $detail ) {
-            if ( $detail['has_mapping'] && $detail['mapping_active'] && $detail['is_validated'] ) {
-                $has_validated_tests = true;
-                break;
+            // LOGIQUE GARDE-FOU STRICTE : Forcer affichage SEULEMENT si TOUS les tests requis sont validés
+            <?php
+            $has_validated_tests = false;
+            $has_required_tests = false;
+            
+            foreach ( $validation_details as $detail ) {
+                if ( $detail['has_mapping'] && $detail['mapping_active'] ) {
+                    $has_required_tests = true; // Il y a au moins un test requis
+                    if ( $detail['is_validated'] ) {
+                        $has_validated_tests = true;
+                    } else {
+                        $has_validated_tests = false; // Si UN test n'est pas validé, on bloque TOUT
+                        break;
+                    }
+                }
             }
-        }
-        ?>
+            
+            // GARDE-FOU : Ne forcer QUE si enforcement activé ET tous tests validés ET pas de tests en attente
+            $should_force_show = $enforcement_enabled && $has_required_tests && $has_validated_tests && count( $pending_tests ) === 0 && ! $should_block;
+            ?>
         
         console.log('🎯 Décision d\'affichage:');
         console.log('  - Should force show:', <?php echo $should_force_show ? 'true' : 'false'; ?>);
@@ -961,17 +970,17 @@ class Cart_Guard {
         // Réexécuter après chargement complet
         document.addEventListener('DOMContentLoaded', forceShowCheckoutButton);
         
-        // Réexécuter périodiquement pendant 5 secondes
-        let forceChecks = 0;
-        const forceInterval = setInterval(function() {
-            forceChecks++;
-            forceShowCheckoutButton();
-            
-            if (forceChecks >= 10) {
-                clearInterval(forceInterval);
-                console.log('🏁 Fin du forçage périodique du bouton checkout');
-            }
-        }, 500);
+            // Réexécuter périodiquement pendant 5 secondes (éviter conflits de variables)
+            let wcqsForceChecks_<?php echo uniqid(); ?> = 0;
+            const wcqsForceInterval_<?php echo uniqid(); ?> = setInterval(function() {
+                wcqsForceChecks_<?php echo uniqid(); ?>++;
+                forceShowCheckoutButton();
+
+                if (wcqsForceChecks_<?php echo uniqid(); ?> >= 10) {
+                    clearInterval(wcqsForceInterval_<?php echo uniqid(); ?>);
+                    console.log('🏁 Fin du forçage périodique du bouton checkout');
+                }
+            }, 500);
         
         <?php else: ?>
         console.log('❌ CONDITIONS NON REMPLIES - Bouton checkout ne sera PAS forcé');
