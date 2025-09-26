@@ -10,6 +10,7 @@ return array(
     'WcQualiopiSteps\\Admin\\Ajax_Handler' => $baseDir . '/src/Admin/Ajax_Handler.php',
     'WcQualiopiSteps\\Admin\\Csv_Handler' => $baseDir . '/src/Admin/Csv_Handler.php',
     'WcQualiopiSteps\\Admin\\Live_Control' => $baseDir . '/src/Admin/Live_Control.php',
+    'WcQualiopiSteps\\Admin\\Log_Viewer' => $baseDir . '/src/Admin/Log_Viewer.php',
     'WcQualiopiSteps\\Admin\\Settings_Page' => $baseDir . '/src/Admin/Settings_Page.php',
     'WcQualiopiSteps\\Core\\Activator' => $baseDir . '/src/Core/Activator.php',
     'WcQualiopiSteps\\Core\\Deactivator' => $baseDir . '/src/Core/Deactivator.php',

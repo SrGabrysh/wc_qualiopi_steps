@@ -25,6 +25,7 @@ class ComposerStaticInit58a7b121a92b59f69a75bb1e4d2a0994
         'WcQualiopiSteps\\Admin\\Ajax_Handler' => __DIR__ . '/../..' . '/src/Admin/Ajax_Handler.php',
         'WcQualiopiSteps\\Admin\\Csv_Handler' => __DIR__ . '/../..' . '/src/Admin/Csv_Handler.php',
         'WcQualiopiSteps\\Admin\\Live_Control' => __DIR__ . '/../..' . '/src/Admin/Live_Control.php',
+        'WcQualiopiSteps\\Admin\\Log_Viewer' => __DIR__ . '/../..' . '/src/Admin/Log_Viewer.php',
         'WcQualiopiSteps\\Admin\\Settings_Page' => __DIR__ . '/../..' . '/src/Admin/Settings_Page.php',
         'WcQualiopiSteps\\Core\\Activator' => __DIR__ . '/../..' . '/src/Core/Activator.php',
         'WcQualiopiSteps\\Core\\Deactivator' => __DIR__ . '/../..' . '/src/Core/Deactivator.php',

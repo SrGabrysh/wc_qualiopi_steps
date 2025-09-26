@@ -416,8 +416,20 @@ class Log_Viewer {
         
         $logs = $this->get_filtered_logs( $time_filter, $level_filter, $source_filter );
         
+        // S'assurer que toutes les données sont des strings
+        $cleaned_logs = array_map( function( $log ) {
+            return [
+                'timestamp' => (int) $log['timestamp'],
+                'datetime' => (string) $log['datetime'],
+                'level' => (string) $log['level'],
+                'source' => (string) $log['source'],
+                'message' => (string) $log['message'],
+                'raw_line' => (string) $log['raw_line']
+            ];
+        }, $logs['entries'] );
+        
         wp_send_json_success( [
-            'logs' => $logs['entries'],
+            'logs' => $cleaned_logs,
             'stats' => $logs['stats']
         ] );
     }
@@ -754,7 +766,7 @@ class Log_Viewer {
             'datetime' => date( 'Y-m-d H:i:s', $timestamp ),
             'level' => $level,
             'source' => $source,
-            'message' => $message,
+            'message' => is_string( $message ) ? $message : print_r( $message, true ),
             'raw_line' => $line
         ];
     }
