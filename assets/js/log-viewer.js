@@ -25,6 +25,7 @@
       );
 
       // Actions
+      $("#wcqs-test-connection").on("click", this.testConnection.bind(this));
       $("#wcqs-refresh-logs").on("click", this.loadLogs.bind(this));
       $("#wcqs-download-logs").on("click", this.downloadLogs.bind(this));
       $("#wcqs-clear-logs").on("click", this.clearLogs.bind(this));
@@ -39,19 +40,58 @@
       $("#wcqs-simulate-cart").on("click", () => this.runTest("simulate_cart"));
     },
 
+    testConnection: function () {
+      console.log('WCQS Log Viewer: Testing connection...');
+      
+      // Vérifier que les variables sont disponibles
+      if (typeof wcqsLogViewer === 'undefined') {
+        console.error('WCQS Log Viewer: wcqsLogViewer object not found!');
+        alert('Configuration JavaScript manquante - wcqsLogViewer non défini');
+        return;
+      }
+      
+      console.log('WCQS Log Viewer: wcqsLogViewer object:', wcqsLogViewer);
+      
+      const data = {
+        action: "wcqs_test_connection",
+        nonce: wcqsLogViewer.nonce || '',
+      };
+      
+      console.log('WCQS Log Viewer: Test connection data:', data);
+      
+      $.post(wcqsLogViewer.ajax_url, data)
+        .done(function(response) {
+          console.log('WCQS Log Viewer: Test connection success:', response);
+          alert('Test connexion réussi: ' + JSON.stringify(response));
+        })
+        .fail(function(xhr, status, error) {
+          console.error('WCQS Log Viewer: Test connection failed:', {xhr, status, error});
+          alert('Test connexion échoué: ' + status + ' - ' + error);
+        });
+    },
+
     loadLogs: function () {
       if (isLoading) return;
+
+      // Vérifier que les variables sont disponibles
+      if (typeof wcqsLogViewer === 'undefined') {
+        console.error('WCQS Log Viewer: wcqsLogViewer object not found!');
+        this.showError('Configuration JavaScript manquante');
+        return;
+      }
 
       isLoading = true;
       this.showLoading();
 
       const data = {
         action: "wcqs_get_logs",
-        nonce: wcqsLogViewer.nonce,
-        time_filter: $("#wcqs-time-filter").val(),
-        level_filter: $("#wcqs-level-filter").val(),
-        source_filter: $("#wcqs-source-filter").val(),
+        nonce: wcqsLogViewer.nonce || '',
+        time_filter: $("#wcqs-time-filter").val() || '60',
+        level_filter: $("#wcqs-level-filter").val() || 'all',
+        source_filter: $("#wcqs-source-filter").val() || 'all',
       };
+      
+      console.log('WCQS Log Viewer - Sending data:', data);
 
       $.post(wcqsLogViewer.ajax_url, data)
         .done(this.displayLogs.bind(this))

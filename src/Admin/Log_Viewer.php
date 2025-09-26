@@ -77,6 +77,12 @@ class Log_Viewer {
         
         // Debug: Log que les hooks sont enregistrés
         error_log( '[WCQS] Log_Viewer: AJAX hooks registered' );
+        
+        // Test que les hooks sont bien actifs
+        add_action( 'wp_ajax_wcqs_test_connection', function() {
+            error_log( '[WCQS] Log_Viewer: Test connection called' );
+            wp_send_json_success( [ 'message' => 'Connection OK', 'timestamp' => current_time( 'Y-m-d H:i:s' ) ] );
+        } );
     }
     
     /**
@@ -107,20 +113,24 @@ class Log_Viewer {
             '0.6.18'
         );
         
+        $localize_data = [
+            'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'nonce' => wp_create_nonce( 'wcqs_log_viewer' ),
+            'strings' => [
+                'loading' => __( 'Chargement des logs...', 'wc_qualiopi_steps' ),
+                'error' => __( 'Erreur lors du chargement', 'wc_qualiopi_steps' ),
+                'no_logs' => __( 'Aucun log trouvé', 'wc_qualiopi_steps' ),
+                'cleared' => __( 'Logs vidés avec succès', 'wc_qualiopi_steps' ),
+                'confirm_clear' => __( 'Êtes-vous sûr de vouloir vider tous les logs ?', 'wc_qualiopi_steps' )
+            ]
+        ];
+        
+        error_log( '[WCQS] Log_Viewer: Localizing script with data: ' . json_encode( $localize_data ) );
+        
         wp_localize_script(
             'wcqs-log-viewer',
             'wcqsLogViewer',
-            [
-                'ajax_url' => admin_url( 'admin-ajax.php' ),
-                'nonce' => wp_create_nonce( 'wcqs_log_viewer' ),
-                'strings' => [
-                    'loading' => __( 'Chargement des logs...', 'wc_qualiopi_steps' ),
-                    'error' => __( 'Erreur lors du chargement', 'wc_qualiopi_steps' ),
-                    'no_logs' => __( 'Aucun log trouvé', 'wc_qualiopi_steps' ),
-                    'cleared' => __( 'Logs vidés avec succès', 'wc_qualiopi_steps' ),
-                    'confirm_clear' => __( 'Êtes-vous sûr de vouloir vider tous les logs ?', 'wc_qualiopi_steps' )
-                ]
-            ]
+            $localize_data
         );
     }
     
@@ -172,6 +182,11 @@ class Log_Viewer {
             
             <!-- Boutons d'action -->
             <div class="wcqs-log-actions">
+                <button id="wcqs-test-connection" class="button button-secondary">
+                    <span class="dashicons dashicons-admin-tools"></span>
+                    <?php _e( 'Test Connexion', 'wc_qualiopi_steps' ); ?>
+                </button>
+                
                 <button id="wcqs-refresh-logs" class="button button-primary">
                     <span class="dashicons dashicons-update"></span>
                     <?php _e( 'Actualiser', 'wc_qualiopi_steps' ); ?>
@@ -416,9 +431,24 @@ class Log_Viewer {
      */
     public function ajax_get_logs(): void {
         error_log( '[WCQS] Log_Viewer: ajax_get_logs called' );
+        error_log( '[WCQS] Log_Viewer: POST data: ' . json_encode( $_POST ) );
+        
+        // Vérifier que c'est bien une requête POST
+        if ( empty( $_POST ) ) {
+            error_log( '[WCQS] Log_Viewer: Empty POST data' );
+            wp_send_json_error( [ 'message' => 'Données POST manquantes' ] );
+            return;
+        }
+        
+        // Vérifier que l'action est correcte
+        if ( ( $_POST['action'] ?? '' ) !== 'wcqs_get_logs' ) {
+            error_log( '[WCQS] Log_Viewer: Wrong action. Expected: wcqs_get_logs, Received: ' . ( $_POST['action'] ?? 'none' ) );
+            wp_send_json_error( [ 'message' => 'Action incorrecte' ] );
+            return;
+        }
         
         if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'wcqs_log_viewer' ) ) {
-            error_log( '[WCQS] Log_Viewer: Invalid nonce for get_logs' );
+            error_log( '[WCQS] Log_Viewer: Invalid nonce for get_logs. Received: ' . ( $_POST['nonce'] ?? 'none' ) );
             wp_send_json_error( [ 'message' => 'Nonce invalide' ] );
             return;
         }
