@@ -783,24 +783,107 @@ class Cart_Guard {
         $cart_count = function_exists( 'WC' ) && WC() && WC()->cart ? WC()->cart->get_cart_contents_count() : 0;
         $pending_tests = $this->get_pending_tests_info();
         
-        error_log( "[WCQS] Cart_Guard DEBUG: cart_page=true, enforcement={$enforcement_enabled}, should_block={$should_block}, cart_items={$cart_count}, pending_tests=" . count( $pending_tests ) );
+        // LOGS BACKEND ULTRA DÉTAILLÉS
+        error_log( "[WCQS BACKEND] ===== CART_GUARD DEBUG DÉTAILLÉ =====" );
+        error_log( "[WCQS BACKEND] 🔧 Configuration:" );
+        error_log( "[WCQS BACKEND]   - Cart page: true" );
+        error_log( "[WCQS BACKEND]   - Enforcement enabled: " . ( $enforcement_enabled ? 'YES' : 'NO' ) );
+        error_log( "[WCQS BACKEND]   - Should block checkout: " . ( $should_block ? 'YES' : 'NO' ) );
+        error_log( "[WCQS BACKEND]   - User ID: " . $user_id );
+        error_log( "[WCQS BACKEND]   - Is admin: " . ( current_user_can('administrator') ? 'YES' : 'NO' ) );
         
-        // Ajouter debug JavaScript + forçage affichage bouton
+        error_log( "[WCQS BACKEND] 🛒 Panier:" );
+        error_log( "[WCQS BACKEND]   - Cart items count: " . $cart_count );
+        error_log( "[WCQS BACKEND]   - Pending tests count: " . count( $pending_tests ) );
+        if ( ! empty( $pending_tests ) ) {
+            foreach ( $pending_tests as $test ) {
+                error_log( "[WCQS BACKEND]     * Pending: Product {$test['product_id']} -> {$test['test_url']}" );
+            }
+        }
+        
+        // Analyser et logger chaque produit
+        foreach ( $cart_items as $cart_item_key => $cart_item ) {
+            $product_id = $cart_item['product_id'];
+            $mapping = WCQS_Mapping::get_for_product( $product_id );
+            $is_validated = $this->is_test_validated( $user_id, $product_id );
+            
+            error_log( "[WCQS BACKEND] 📦 Produit {$product_id}:" );
+            error_log( "[WCQS BACKEND]     - Has mapping: " . ( ! empty( $mapping ) ? 'YES' : 'NO' ) );
+            error_log( "[WCQS BACKEND]     - Mapping active: " . ( ! empty( $mapping['active'] ) ? 'YES' : 'NO' ) );
+            error_log( "[WCQS BACKEND]     - Is validated: " . ( $is_validated ? 'YES' : 'NO' ) );
+            error_log( "[WCQS BACKEND]     - Page ID: " . ( $mapping['page_id'] ?? 'null' ) );
+            
+            if ( $mapping ) {
+                error_log( "[WCQS BACKEND]     - Mapping details: " . json_encode( $mapping ) );
+            }
+        }
+        
+        // Variables pour debug JavaScript détaillé
+        $cart_items = function_exists( 'WC' ) && WC() && WC()->cart ? WC()->cart->get_cart() : [];
+        $user_id = get_current_user_id();
+        $validation_details = [];
+        
+        // Analyser chaque produit du panier
+        foreach ( $cart_items as $cart_item_key => $cart_item ) {
+            $product_id = $cart_item['product_id'];
+            $mapping = WCQS_Mapping::get_for_product( $product_id );
+            $is_validated = $this->is_test_validated( $user_id, $product_id );
+            
+            $validation_details[] = [
+                'product_id' => $product_id,
+                'has_mapping' => ! empty( $mapping ),
+                'mapping_active' => ! empty( $mapping['active'] ),
+                'is_validated' => $is_validated,
+                'page_id' => $mapping['page_id'] ?? null
+            ];
+        }
+        
+        // Ajouter debug JavaScript ULTRA détaillé + logique correcte
         ?>
         <script type="text/javascript">
-        console.log('=== WCQS Cart_Guard Debug (Expert Fix) ===');
-        console.log('Enforcement enabled:', <?php echo $enforcement_enabled ? 'true' : 'false'; ?>);
-        console.log('Should block checkout:', <?php echo $should_block ? 'true' : 'false'; ?>);
-        console.log('Cart items count:', <?php echo $cart_count; ?>);
-        console.log('Pending tests count:', <?php echo count( $pending_tests ); ?>);
-        console.log('Pending tests:', <?php echo json_encode( $pending_tests ); ?>);
+        console.log('=== WCQS Cart_Guard Debug DÉTAILLÉ (v0.7.8) ===');
+        console.log('🔧 Configuration:');
+        console.log('  - Enforcement enabled:', <?php echo $enforcement_enabled ? 'true' : 'false'; ?>);
+        console.log('  - Should block checkout:', <?php echo $should_block ? 'true' : 'false'; ?>);
+        console.log('  - User ID:', <?php echo $user_id; ?>);
+        console.log('  - Is admin:', <?php echo current_user_can('administrator') ? 'true' : 'false'; ?>);
         
-        // FORCER AFFICHAGE BOUTON CHECKOUT SI BACKEND AUTORISE
-        <?php if ( ! $should_block ): ?>
-        console.log('🚀 Backend autorise checkout - Forçage affichage bouton...');
+        console.log('🛒 Panier:');
+        console.log('  - Cart items count:', <?php echo count( $cart_items ); ?>);
+        console.log('  - Pending tests count:', <?php echo count( $pending_tests ); ?>);
+        console.log('  - Pending tests:', <?php echo json_encode( $pending_tests ); ?>);
+        
+        console.log('🔍 Détails validation par produit:');
+        <?php foreach ( $validation_details as $detail ): ?>
+        console.log('  📦 Produit <?php echo $detail['product_id']; ?>:');
+        console.log('    - Has mapping: <?php echo $detail['has_mapping'] ? 'true' : 'false'; ?>');
+        console.log('    - Mapping active: <?php echo $detail['mapping_active'] ? 'true' : 'false'; ?>');
+        console.log('    - Is validated: <?php echo $detail['is_validated'] ? 'true' : 'false'; ?>');
+        console.log('    - Page ID: <?php echo $detail['page_id'] ?? 'null'; ?>');
+        <?php endforeach; ?>
+        
+        // LOGIQUE CORRECTE : Forcer affichage SEULEMENT si tests validés ET enforcement activé
+        <?php 
+        $should_force_show = $enforcement_enabled && ! $should_block && count( $pending_tests ) === 0;
+        $has_validated_tests = false;
+        foreach ( $validation_details as $detail ) {
+            if ( $detail['has_mapping'] && $detail['mapping_active'] && $detail['is_validated'] ) {
+                $has_validated_tests = true;
+                break;
+            }
+        }
+        ?>
+        
+        console.log('🎯 Décision d\'affichage:');
+        console.log('  - Should force show:', <?php echo $should_force_show ? 'true' : 'false'; ?>);
+        console.log('  - Has validated tests:', <?php echo $has_validated_tests ? 'true' : 'false'; ?>);
+        
+        <?php if ( $should_force_show && $has_validated_tests ): ?>
+        console.log('✅ CONDITIONS REMPLIES - Forçage affichage bouton checkout...');
         
         function forceShowCheckoutButton() {
-            // Rechercher tous les boutons checkout possibles
+            console.log('🔍 Recherche des boutons checkout...');
+            
             const selectors = [
                 '.wc-block-cart__submit-button',
                 '.wc-block-checkout__actions_row .wc-block-components-checkout-place-order-button',
@@ -837,13 +920,13 @@ class Cart_Guard {
             });
             
             if (!buttonFound) {
-                console.log('⚠️ Aucun bouton checkout trouvé avec les sélecteurs standards');
+                console.log('⚠️ Aucun bouton checkout trouvé - sélecteurs testés:', selectors);
             }
             
             // Supprimer les messages de blocage éventuels
             const blockingSelectors = [
                 '.wc-block-components-notice-banner',
-                '.woocommerce-error',
+                '.woocommerce-error', 
                 '.woocommerce-message',
                 '.wcqs-checkout-blocked',
                 '[role="alert"]'
@@ -866,19 +949,27 @@ class Cart_Guard {
         // Réexécuter après chargement complet
         document.addEventListener('DOMContentLoaded', forceShowCheckoutButton);
         
-        // Réexécuter périodiquement pendant 5 secondes (pour les Blocks qui se chargent tard)
+        // Réexécuter périodiquement pendant 5 secondes
         let forceChecks = 0;
         const forceInterval = setInterval(function() {
             forceChecks++;
             forceShowCheckoutButton();
             
-            if (forceChecks >= 10) { // 10 * 500ms = 5 secondes
+            if (forceChecks >= 10) {
                 clearInterval(forceInterval);
                 console.log('🏁 Fin du forçage périodique du bouton checkout');
             }
         }, 500);
         
+        <?php else: ?>
+        console.log('❌ CONDITIONS NON REMPLIES - Bouton checkout ne sera PAS forcé');
+        console.log('  - Raisons possibles:');
+        console.log('    * Enforcement désactivé: <?php echo ! $enforcement_enabled ? 'OUI' : 'NON'; ?>');
+        console.log('    * Should block: <?php echo $should_block ? 'OUI' : 'NON'; ?>');
+        console.log('    * Tests en attente: <?php echo count( $pending_tests ) > 0 ? 'OUI (' . count( $pending_tests ) . ')' : 'NON'; ?>');
+        console.log('    * Aucun test validé: <?php echo ! $has_validated_tests ? 'OUI' : 'NON'; ?>');
         <?php endif; ?>
+        
         </script>
         <?php
     }
