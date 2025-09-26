@@ -389,22 +389,35 @@ class Cart_Guard {
 
             $logger->debug( "Cart_Guard: Checking user meta for key {$meta_key}, user {$user_id}" );
             $logger->debug( "Cart_Guard: User meta value: " . ( $meta_value ? $meta_value : 'EMPTY' ) );
+            
+            // LOG CRITIQUE POUR DEBUG
+            \error_log( "[WCQS DEBUG] is_test_validated() - User {$user_id}, Product {$product_id}" );
+            \error_log( "[WCQS DEBUG] - Meta key: {$meta_key}" );
+            \error_log( "[WCQS DEBUG] - Meta value: " . ( $meta_value ? $meta_value : 'EMPTY' ) );
 
             if ( ! empty( $meta_value ) ) {
                 // Vérifier que la validation n'est pas trop ancienne (24h)
                 $validation_time = strtotime( $meta_value );
                 $logger->debug( "Cart_Guard: Validation timestamp: " . ( $validation_time ? date( 'Y-m-d H:i:s', $validation_time ) : 'INVALID' ) );
+                
+                \error_log( "[WCQS DEBUG] - Validation timestamp: " . ( $validation_time ? date( 'Y-m-d H:i:s', $validation_time ) : 'INVALID' ) );
 
                 $is_expired = ( $validation_time && ( \time() - $validation_time ) >= \DAY_IN_SECONDS );
                 $logger->debug( "Cart_Guard: Validation expired: " . ( $is_expired ? 'YES' : 'NO' ) );
+                
+                \error_log( "[WCQS DEBUG] - Is expired: " . ( $is_expired ? 'YES' : 'NO' ) );
 
                 $is_validated = ( $validation_time && ! $is_expired );
                 if ( $is_validated ) {
                     $logger->debug( "Cart_Guard: Test validated via user meta for product {$product_id}" );
+                    \error_log( "[WCQS DEBUG] - VALIDATION SUCCESS via user meta!" );
                 }
             } else {
                 $logger->debug( "Cart_Guard: No user meta found for product {$product_id}" );
+                \error_log( "[WCQS DEBUG] - No user meta found" );
             }
+        } else {
+            \error_log( "[WCQS DEBUG] - Skipping user meta check: is_validated={$is_validated}, user_id={$user_id}" );
         }
 
         // Mettre en cache
