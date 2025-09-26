@@ -17,6 +17,7 @@ class Ajax_Handler {
 		add_action( 'wp_ajax_wcqs_validate_product', array( __CLASS__, 'validate_product' ) );
 		add_action( 'wp_ajax_wcqs_validate_page', array( __CLASS__, 'validate_page' ) );
 		add_action( 'wp_ajax_wcqs_validate_gf_form', array( __CLASS__, 'validate_gf_form' ) );
+		add_action( 'wp_ajax_wcqs_simulate_validation', array( __CLASS__, 'simulate_validation' ) );
 	}
 
 	/**
@@ -149,6 +150,55 @@ class Ajax_Handler {
 		wp_send_json_success( array(
 			'message' => sprintf( __( 'Formulaire "%s" trouvé ✓', 'wc_qualiopi_steps' ), $form['title'] ),
 			'form_title' => $form['title']
+		) );
+	}
+
+	/**
+	 * Simule la validation d'un test (pour les tests d'intégration)
+	 */
+	public static function simulate_validation(): void {
+		// Vérification nonce
+		if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'wcqs_ajax_nonce' ) ) {
+			wp_send_json_error( array(
+				'message' => __( 'Security check failed', 'wc_qualiopi_steps' )
+			) );
+		}
+
+		$product_id = (int) ( $_POST['product_id'] ?? 0 );
+
+		if ( $product_id <= 0 ) {
+			wp_send_json_error( array(
+				'message' => __( 'ID produit invalide', 'wc_qualiopi_steps' )
+			) );
+		}
+
+		$user_id = get_current_user_id();
+		if ( $user_id <= 0 ) {
+			wp_send_json_error( array(
+				'message' => __( 'Utilisateur non connecté', 'wc_qualiopi_steps' )
+			) );
+		}
+
+		// Simuler la validation en session WooCommerce
+		if ( class_exists( '\\WcQualiopiSteps\\Utils\\WCQS_Session' ) ) {
+			\WcQualiopiSteps\Utils\WCQS_Session::set_solved( $product_id, 3600 ); // 1 heure
+		}
+
+		// Simuler la validation en user meta (preuve persistante)
+		$meta_key = "_wcqs_testpos_ok_{$product_id}";
+		$timestamp = date( 'c' ); // Format ISO 8601
+		update_user_meta( $user_id, $meta_key, $timestamp );
+
+		// Log de l'action pour audit
+		error_log( "[WCQS] AJAX: Test validation simulated for user {$user_id}, product {$product_id}" );
+
+		wp_send_json_success( array(
+			'message' => sprintf( __( 'Test simulé comme validé pour le produit #%d', 'wc_qualiopi_steps' ), $product_id ),
+			'product_id' => $product_id,
+			'user_id' => $user_id,
+			'timestamp' => $timestamp,
+			'session_set' => true,
+			'meta_set' => true
 		) );
 	}
 }

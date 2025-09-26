@@ -73,11 +73,19 @@ class WCQS_Mapping {
 
 		// Valeurs par défaut
 		$config = wp_parse_args( $config, array(
-			'page_id'    => 0,
-			'gf_form_id' => 0,
-			'active'     => false,
-			'notes'      => '',
+			'page_id'     => 0,
+			'form_source' => 'learndash', // learnDash par défaut
+			'form_ref'    => '',
+			'active'      => false,
+			'notes'       => '',
 		) );
+
+		// Migration automatique de l'ancienne structure vers la nouvelle
+		if ( isset( $config['gf_form_id'] ) && ! isset( $config['form_source'] ) ) {
+			$config['form_source'] = 'gravityforms';
+			$config['form_ref'] = $config['gf_form_id'];
+			unset( $config['gf_form_id'] );
+		}
 
 		return $config;
 	}
@@ -208,13 +216,23 @@ class WCQS_Mapping {
 			}
 		}
 
-		// Vérifier gf_form_id si présent
-		if ( isset( $config['gf_form_id'] ) && ! empty( $config['gf_form_id'] ) ) {
-			$gf_form_id = (int) $config['gf_form_id'];
-			if ( $gf_form_id > 0 && class_exists( 'GFAPI' ) ) {
-				$form = \GFAPI::get_form( $gf_form_id );
-				if ( ! $form || is_wp_error( $form ) ) {
-					$errors[] = __( 'Gravity Forms form not found', 'wc_qualiopi_steps' );
+		// Vérifier form_source et form_ref si présents
+		$form_source = $config['form_source'] ?? 'learndash';
+		$form_ref = $config['form_ref'] ?? '';
+
+		if ( ! empty( $form_ref ) ) {
+			if ( $form_source === 'gravityforms' ) {
+				$gf_form_id = (int) $form_ref;
+				if ( $gf_form_id > 0 && class_exists( 'GFAPI' ) ) {
+					$form = \GFAPI::get_form( $gf_form_id );
+					if ( ! $form || is_wp_error( $form ) ) {
+						$errors[] = __( 'Gravity Forms form not found', 'wc_qualiopi_steps' );
+					}
+				}
+			} elseif ( $form_source === 'learndash' ) {
+				// Validation LearnDash (quiz, lesson, etc.)
+				if ( ! empty( $form_ref ) && ! is_numeric( $form_ref ) ) {
+					$errors[] = __( 'LearnDash reference must be numeric (quiz ID, lesson ID, etc.)', 'wc_qualiopi_steps' );
 				}
 			}
 		}

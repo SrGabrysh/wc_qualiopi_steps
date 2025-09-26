@@ -355,40 +355,62 @@ class Cart_Guard {
     
     /**
      * Vérifier si un test est validé pour un utilisateur/produit
-     * 
+     *
      * @param int $user_id
      * @param int $product_id
      * @return bool
      */
     private function is_test_validated( int $user_id, int $product_id ): bool {
+        $logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
+
         // Cache pour éviter les répétitions
         $cache_key = "{$user_id}_{$product_id}";
         if ( isset( $this->user_validations[ $cache_key ] ) ) {
+            $logger->debug( "Cart_Guard: Using cached validation result for user {$user_id}, product {$product_id}: " . ( $this->user_validations[ $cache_key ] ? 'VALIDATED' : 'NOT_VALIDATED' ) );
             return $this->user_validations[ $cache_key ];
         }
-        
+
         $is_validated = false;
-        
+
         // 1. Vérifier la session WooCommerce (priorité)
-        if ( WCQS_Session::is_solved( $product_id ) ) {
+        $logger->debug( "Cart_Guard: Checking session validation for product {$product_id}" );
+        $session_validated = WCQS_Session::is_solved( $product_id );
+        $logger->debug( "Cart_Guard: Session validation result for product {$product_id}: " . ( $session_validated ? 'SOLVED' : 'NOT_SOLVED' ) );
+
+        if ( $session_validated ) {
             $is_validated = true;
+            $logger->debug( "Cart_Guard: Test validated via session for product {$product_id}" );
         }
-        
+
         // 2. Vérifier les user meta (fallback)
         if ( ! $is_validated && $user_id > 0 ) {
             $meta_key = "_wcqs_testpos_ok_{$product_id}";
             $meta_value = \get_user_meta( $user_id, $meta_key, true );
-            
+
+            $logger->debug( "Cart_Guard: Checking user meta for key {$meta_key}, user {$user_id}" );
+            $logger->debug( "Cart_Guard: User meta value: " . ( $meta_value ? $meta_value : 'EMPTY' ) );
+
             if ( ! empty( $meta_value ) ) {
                 // Vérifier que la validation n'est pas trop ancienne (24h)
                 $validation_time = strtotime( $meta_value );
-                $is_validated = ( $validation_time && ( \time() - $validation_time ) < \DAY_IN_SECONDS );
+                $logger->debug( "Cart_Guard: Validation timestamp: " . ( $validation_time ? date( 'Y-m-d H:i:s', $validation_time ) : 'INVALID' ) );
+
+                $is_expired = ( $validation_time && ( \time() - $validation_time ) >= \DAY_IN_SECONDS );
+                $logger->debug( "Cart_Guard: Validation expired: " . ( $is_expired ? 'YES' : 'NO' ) );
+
+                $is_validated = ( $validation_time && ! $is_expired );
+                if ( $is_validated ) {
+                    $logger->debug( "Cart_Guard: Test validated via user meta for product {$product_id}" );
+                }
+            } else {
+                $logger->debug( "Cart_Guard: No user meta found for product {$product_id}" );
             }
         }
-        
+
         // Mettre en cache
         $this->user_validations[ $cache_key ] = $is_validated;
-        
+        $logger->debug( "Cart_Guard: Final validation result for user {$user_id}, product {$product_id}: " . ( $is_validated ? 'VALIDATED' : 'NOT_VALIDATED' ) );
+
         return $is_validated;
     }
     
@@ -607,6 +629,12 @@ class Cart_Guard {
             wc_add_notice(
                 __( 'Pour poursuivre, vous devez d\'abord réaliser le test de positionnement lié à cette formation.', 'wc-qualiopi-steps' ),
                 'notice'
+            );
+        } elseif ( ! $this->should_block_checkout() && ( is_cart() || $this->is_checkout_page() ) ) {
+            // Message de succès si le test est validé
+            wc_add_notice(
+                __( '✅ Test de positionnement validé ! Vous pouvez maintenant procéder au paiement.', 'wc-qualiopi-steps' ),
+                'success'
             );
         }
     }

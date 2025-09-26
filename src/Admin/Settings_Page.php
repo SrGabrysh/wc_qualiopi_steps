@@ -91,11 +91,19 @@ class Settings_Page {
 		// IMPORTANT: Utiliser array_values pour forcer l'indexation numérique (0, 1, 2...)
 		// au lieu des clés string générées par JavaScript (68d52001dc28b, etc.)
 		foreach ( array_values( $lines ) as $i => $line ) {
-			$product_id = isset( $line['product_id'] ) ? (int) $line['product_id'] : 0;
-			$page_id    = isset( $line['page_id'] ) ? (int) $line['page_id'] : 0;
-			$gf_id      = isset( $line['gf_form_id'] ) ? (int) $line['gf_form_id'] : 0;
-			$active     = ! empty( $line['active'] );
-			$notes      = isset( $line['notes'] ) ? sanitize_text_field( (string) $line['notes'] ) : '';
+			$product_id  = isset( $line['product_id'] ) ? (int) $line['product_id'] : 0;
+			$page_id     = isset( $line['page_id'] ) ? (int) $line['page_id'] : 0;
+			$form_source = isset( $line['form_source'] ) ? sanitize_text_field( (string) $line['form_source'] ) : 'learndash';
+			$form_ref    = isset( $line['form_ref'] ) ? sanitize_text_field( (string) $line['form_ref'] ) : '';
+
+			// Migration de l'ancienne structure
+			if ( isset( $line['gf_form_id'] ) && ! isset( $line['form_source'] ) ) {
+				$form_source = 'gravityforms';
+				$form_ref = (string) $line['gf_form_id'];
+			}
+
+			$active = ! empty( $line['active'] );
+			$notes  = isset( $line['notes'] ) ? sanitize_text_field( (string) $line['notes'] ) : '';
 
 			// Ignore les lignes vides.
 			if ( $product_id <= 0 && $page_id <= 0 && empty( $notes ) ) {
@@ -109,7 +117,7 @@ class Settings_Page {
 			}
 
 			// Validations fortes.
-			$err = self::validate_row( $product_id, $page_id );
+			$err = self::validate_row( $product_id, $page_id, $form_source, $form_ref );
 			if ( $err ) {
 				self::admin_error( sprintf( /* translators: %s error msg */
 					__( 'Ligne %d: %s', 'wc_qualiopi_steps' ), $i + 1, $err
@@ -131,10 +139,11 @@ class Settings_Page {
 
 			$key                   = 'product_' . $product_id;
 			$validated_rows[ $key ] = array(
-				'page_id'    => $page_id,
-				'gf_form_id' => $gf_id > 0 ? $gf_id : 0, // Normalisation : 0 au lieu de null
-				'active'     => (bool) $active,
-				'notes'      => $notes,
+				'page_id'     => $page_id,
+				'form_source' => $form_source,
+				'form_ref'    => $form_ref,
+				'active'      => (bool) $active,
+				'notes'       => $notes,
 			);
 		}
 
@@ -167,7 +176,7 @@ class Settings_Page {
 	/**
 	 * Valide une ligne (existence produit/page publiés).
 	 */
-	private static function validate_row( int $product_id, int $page_id ): string {
+	private static function validate_row( int $product_id, int $page_id, string $form_source = 'learndash', string $form_ref = '' ): string {
 		if ( $product_id <= 0 ) {
 			return __( 'Produit manquant.', 'wc_qualiopi_steps' );
 		}
@@ -193,6 +202,26 @@ class Settings_Page {
 			return __( 'La page de test doit être publiée.', 'wc_qualiopi_steps' );
 		}
 
+		// Valider form_source et form_ref
+		if ( ! empty( $form_ref ) ) {
+			if ( $form_source === 'gravityforms' ) {
+				$gf_form_id = (int) $form_ref;
+				if ( $gf_form_id <= 0 ) {
+					return __( 'ID Gravity Forms invalide.', 'wc_qualiopi_steps' );
+				}
+				if ( class_exists( 'GFAPI' ) ) {
+					$form = \GFAPI::get_form( $gf_form_id );
+					if ( ! $form || is_wp_error( $form ) ) {
+						return __( 'Formulaire Gravity Forms introuvable.', 'wc_qualiopi_steps' );
+					}
+				}
+			} elseif ( $form_source === 'learndash' ) {
+				if ( ! is_numeric( $form_ref ) ) {
+					return __( 'Référence LearnDash doit être numérique (ID quiz, leçon, etc.).', 'wc_qualiopi_steps' );
+				}
+			}
+		}
+
 		return '';
 	}
 
@@ -203,7 +232,7 @@ class Settings_Page {
 	 */
 	private static function render_view( array $rows ): void {
 		$title = esc_html__( 'Mapping produit → page de test', 'wc_qualiopi_steps' );
-		$desc  = esc_html__( 'Définissez pour chaque formation la page de test de positionnement (et son éventuel ID Gravity Forms). Un seul mapping par produit.', 'wc_qualiopi_steps' );
+		$desc  = esc_html__( 'Définissez pour chaque formation la page de test de positionnement et sa source (LearnDash ou Gravity Forms). Un seul mapping par produit.', 'wc_qualiopi_steps' );
 
 		?>
 		<div class="wrap wcqs-wrap">
@@ -224,7 +253,8 @@ class Settings_Page {
 						<tr>
 							<th style="width:140px;"><?php esc_html_e( 'ID produit', 'wc_qualiopi_steps' ); ?></th>
 							<th><?php esc_html_e( 'Page de test (ID)', 'wc_qualiopi_steps' ); ?></th>
-							<th style="width:120px;"><?php esc_html_e( 'ID Gravity Forms', 'wc_qualiopi_steps' ); ?></th>
+							<th style="width:120px;"><?php esc_html_e( 'Source', 'wc_qualiopi_steps' ); ?></th>
+							<th style="width:120px;"><?php esc_html_e( 'Référence', 'wc_qualiopi_steps' ); ?></th>
 							<th style="width:90px;"><?php esc_html_e( 'Actif', 'wc_qualiopi_steps' ); ?></th>
 							<th><?php esc_html_e( 'Notes', 'wc_qualiopi_steps' ); ?></th>
 							<th style="width:80px;"><?php esc_html_e( 'Actions', 'wc_qualiopi_steps' ); ?></th>
@@ -341,11 +371,19 @@ class Settings_Page {
 	 * @param array $data
 	 */
 	private static function render_empty_row( bool $template = false ): void {
-		self::render_row( 0, array( 'page_id' => 0, 'gf_form_id' => null, 'active' => true, 'notes' => '' ), $template );
+		self::render_row( 0, array( 'page_id' => 0, 'form_source' => 'learndash', 'form_ref' => '', 'active' => true, 'notes' => '' ), $template );
 	}
 
 	private static function render_row( int $product_id, array $data, bool $template = false ): void {
 		$attr = $template ? ' data-template="1"' : '';
+
+		// Migration automatique pour l'affichage
+		$form_source = $data['form_source'] ?? 'learndash';
+		$form_ref = $data['form_ref'] ?? '';
+		if ( isset( $data['gf_form_id'] ) && ! isset( $data['form_source'] ) ) {
+			$form_source = 'gravityforms';
+			$form_ref = (string) $data['gf_form_id'];
+		}
 		?>
 		<tr class="wcqs-row"<?php echo $attr; // phpcs:ignore ?>>
 			<td>
@@ -359,8 +397,16 @@ class Settings_Page {
 				<p class="description"><?php esc_html_e( 'ID de la page WordPress publiée', 'wc_qualiopi_steps' ); ?></p>
 			</td>
 			<td>
-				<input type="number" min="0" class="small-text"
-					name="wcqs[lines][<?php echo $template ? '{INDEX}' : uniqid(); ?>][gf_form_id]" value="<?php echo esc_attr( (int) ( $data['gf_form_id'] ?? 0 ) ); ?>" />
+				<select class="small-text" name="wcqs[lines][<?php echo $template ? '{INDEX}' : uniqid(); ?>][form_source]">
+					<option value="learndash" <?php selected( $form_source, 'learndash' ); ?>>LearnDash</option>
+					<option value="gravityforms" <?php selected( $form_source, 'gravityforms' ); ?>>Gravity Forms</option>
+				</select>
+				<p class="description"><?php esc_html_e( 'Source du formulaire', 'wc_qualiopi_steps' ); ?></p>
+			</td>
+			<td>
+				<input type="text" class="small-text"
+					name="wcqs[lines][<?php echo $template ? '{INDEX}' : uniqid(); ?>][form_ref]" value="<?php echo esc_attr( $form_ref ); ?>" />
+				<p class="description"><?php esc_html_e( 'ID/Référence', 'wc_qualiopi_steps' ); ?></p>
 			</td>
 			<td style="text-align:center;">
 				<label>
