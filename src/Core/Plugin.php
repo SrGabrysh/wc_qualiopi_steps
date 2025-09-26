@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.6.23';
+	const VERSION = '0.6.25';
 
 	/**
 	 * Flags par défaut du plugin

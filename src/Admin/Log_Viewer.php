@@ -80,6 +80,10 @@ class Log_Viewer {
         error_log( '[WCQS] Log_Viewer: Constructor called, hooks being registered' );
         error_log( '[WCQS] Log_Viewer: Current user can manage options: ' . ( current_user_can( 'manage_options' ) ? 'YES' : 'NO' ) );
         
+        // Test d'écriture de log direct
+        $log_test_file = WP_CONTENT_DIR . '/wcqs_test_log.txt';
+        file_put_contents( $log_test_file, '[WCQS] Log_Viewer initialized at ' . current_time( 'Y-m-d H:i:s' ) . PHP_EOL, FILE_APPEND | LOCK_EX );
+        
         // Test que les hooks sont bien actifs
         add_action( 'wp_ajax_wcqs_test_connection', function() {
             error_log( '[WCQS] Log_Viewer: Test connection called' );
@@ -432,6 +436,10 @@ class Log_Viewer {
      * AJAX: Récupérer les logs filtrés
      */
     public function ajax_get_logs(): void {
+        // Test d'écriture de log direct pour vérifier si la fonction est appelée
+        $log_test_file = WP_CONTENT_DIR . '/wcqs_test_log.txt';
+        file_put_contents( $log_test_file, '[WCQS] ajax_get_logs called at ' . current_time( 'Y-m-d H:i:s' ) . PHP_EOL, FILE_APPEND | LOCK_EX );
+        
         error_log( '[WCQS] Log_Viewer: ajax_get_logs called' );
         error_log( '[WCQS] Log_Viewer: POST data: ' . json_encode( $_POST ) );
         
