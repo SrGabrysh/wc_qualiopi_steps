@@ -187,9 +187,10 @@ class Cart_Guard {
     
     /**
      * Remplacer le bouton checkout si nécessaire
-     * CORRECTION EXPERTS: Vérifier conditions dans callback
+     * CORRECTION EXPERTS: Vérifier conditions dans callback + Test d'isolation Expert #5
      */
     public function maybe_replace_checkout_button(): void {
+        $this->log_trace( "Hook 'woocommerce_proceed_to_checkout' FIRED (Priority 5) - BUTTON REPLACE" );
         error_log( '[WCQS] Cart_Guard: maybe_replace_checkout_button triggered' );
         
         // CORRECTION: Vérifier les conditions ici, pas à l'init
@@ -214,9 +215,10 @@ class Cart_Guard {
     
     /**
      * Ajouter la notice de test requis
-     * CORRECTION EXPERTS: Vérifier conditions dans callback
+     * CORRECTION EXPERTS: Vérifier conditions dans callback + Test d'isolation Expert #5
      */
     public function maybe_add_test_notice(): void {
+        $this->log_trace( "Hook 'woocommerce_proceed_to_checkout' FIRED (Priority 10) - ADD NOTICE" );
         error_log( '[WCQS] Cart_Guard: maybe_add_test_notice triggered' );
         
         // CORRECTION: Vérifier les conditions ici
@@ -242,10 +244,21 @@ class Cart_Guard {
     
     /**
      * Déterminer si le checkout doit être bloqué
+     * CORRECTION: Test d'isolation Expert #5 - Force TRUE pour diagnostic
      * 
      * @return bool
      */
     private function should_block_checkout(): bool {
+        // --- DEBUG: FORCE TRUE (Expert #5 Isolation Test) ---
+        if ( function_exists( 'WC' ) && \WC() && \WC()->cart && ! \WC()->cart->is_empty() ) {
+            $this->log_trace( "DEBUG MODE: Forcing should_block_checkout() to TRUE (Expert #5 Test)" );
+            error_log( '[WCQS] Cart_Guard: DEBUG MODE - Forcing should_block_checkout() to TRUE' );
+            return true;
+        }
+        // -------------------------
+        
+        // Code original commenté pour le test
+        /*
         // Vérifier que WooCommerce est disponible
         if ( ! function_exists( 'WC' ) || ! \WC() || ! \WC()->cart ) {
             return false;
@@ -257,6 +270,9 @@ class Cart_Guard {
         
         $pending_tests = $this->get_pending_tests_info();
         return ! empty( $pending_tests );
+        */
+        
+        return false;
     }
     
     /**
@@ -495,6 +511,17 @@ class Cart_Guard {
      */
     
     /**
+     * Log de trace pour diagnostic (Expert #5)
+     */
+    private function log_trace( string $message ): void {
+        if ( function_exists( 'wc_get_logger' ) ) {
+            wc_get_logger()->info( $message, [ 'source' => 'WCQS_Cart_Guard_Trace' ] );
+        } else {
+            error_log( "WCQS_Cart_Guard_Trace: " . $message );
+        }
+    }
+    
+    /**
      * Garde universelle par redirection (Expert #1)
      */
     public function guard_template_redirect(): void {
@@ -520,6 +547,7 @@ class Cart_Guard {
      * Hook alternatif avant les totaux (Expert #2)
      */
     public function maybe_add_test_notice_before_totals(): void {
+        $this->log_trace( "Hook 'woocommerce_before_cart_totals' FIRED - ALTERNATIVE HOOK" );
         error_log( '[WCQS] Cart_Guard: maybe_add_test_notice_before_totals triggered' );
         $this->maybe_add_test_notice();
     }
