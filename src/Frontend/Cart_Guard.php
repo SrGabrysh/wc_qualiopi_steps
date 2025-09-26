@@ -249,16 +249,6 @@ class Cart_Guard {
      * @return bool
      */
     private function should_block_checkout(): bool {
-        // --- DEBUG: FORCE TRUE (Expert #5 Isolation Test) ---
-        if ( function_exists( 'WC' ) && \WC() && \WC()->cart && ! \WC()->cart->is_empty() ) {
-            $this->log_trace( "DEBUG MODE: Forcing should_block_checkout() to TRUE (Expert #5 Test)" );
-            error_log( '[WCQS] Cart_Guard: DEBUG MODE - Forcing should_block_checkout() to TRUE' );
-            return true;
-        }
-        // -------------------------
-        
-        // Code original commenté pour le test
-        /*
         // Vérifier que WooCommerce est disponible
         if ( ! function_exists( 'WC' ) || ! \WC() || ! \WC()->cart ) {
             return false;
@@ -269,10 +259,17 @@ class Cart_Guard {
         }
         
         $pending_tests = $this->get_pending_tests_info();
-        return ! empty( $pending_tests );
-        */
+        $should_block = ! empty( $pending_tests );
         
-        return false;
+        // Log pour diagnostic
+        if ( $should_block ) {
+            $this->log_trace( "Blocking checkout - Pending tests found: " . count( $pending_tests ) );
+            error_log( '[WCQS] Cart_Guard: Blocking checkout - ' . count( $pending_tests ) . ' pending tests' );
+        } else {
+            $this->log_trace( "Allowing checkout - No pending tests" );
+        }
+        
+        return $should_block;
     }
     
     /**
