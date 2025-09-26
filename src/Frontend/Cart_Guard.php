@@ -67,7 +67,7 @@ class Cart_Guard {
         }
         return self::$instance;
     }
-
+    
     /**
      * Vide le cache des validations (Expert Fix)
      */
@@ -373,21 +373,21 @@ class Cart_Guard {
 
         // IMPORTANT: Pas de cache pour les vérifications critiques
         // Le cache causait des faux positifs persistants
-        
+
         $is_validated = false;
 
         // 1. Vérification stricte de la session WooCommerce
         if ( class_exists( '\\WcQualiopiSteps\\Utils\\WCQS_Session' ) ) {
-            $logger->debug( "Cart_Guard: Checking session validation for product {$product_id}" );
+        $logger->debug( "Cart_Guard: Checking session validation for product {$product_id}" );
             
             // Pour l'instant, utiliser la méthode existante mais avec logs détaillés
-            $session_validated = WCQS_Session::is_solved( $product_id );
+        $session_validated = WCQS_Session::is_solved( $product_id );
             $logger->debug( "Cart_Guard: Session validation result: " . ( $session_validated ? 'SOLVED' : 'NOT_SOLVED' ) );
             \error_log( "[WCQS EXPERT FIX] Session check for product {$product_id}: " . ( $session_validated ? 'SOLVED' : 'NOT_SOLVED' ) );
-            
-            if ( $session_validated ) {
-                $is_validated = true;
-                $logger->debug( "Cart_Guard: Test validated via session for product {$product_id}" );
+
+        if ( $session_validated ) {
+            $is_validated = true;
+            $logger->debug( "Cart_Guard: Test validated via session for product {$product_id}" );
                 \error_log( "[WCQS EXPERT FIX] VALIDATED via session!" );
             } else {
                 $logger->debug( "Cart_Guard: No valid session found for product {$product_id}" );
@@ -402,7 +402,7 @@ class Cart_Guard {
 
             $logger->debug( "Cart_Guard: Checking NEW meta key {$meta_key}, user {$user_id}" );
             \error_log( "[WCQS EXPERT FIX] Checking NEW meta key: {$meta_key}" );
-            
+
             if ( ! empty( $meta_value ) ) {
                 // Vérifier que c'est un array avec les bonnes clés
                 $meta_data = maybe_unserialize( $meta_value );
@@ -427,8 +427,8 @@ class Cart_Guard {
                             \error_log( "[WCQS EXPERT FIX] Meta expired, cleaning..." );
                             // Nettoyer la meta expirée
                             delete_user_meta( $user_id, $meta_key );
-                        }
-                    } else {
+                }
+            } else {
                         $logger->debug( "Cart_Guard: Test not completed for product {$product_id}" );
                         \error_log( "[WCQS EXPERT FIX] Test not completed" );
                     }
@@ -587,11 +587,12 @@ class Cart_Guard {
     }
     
     /**
-     * Méthode pour les tests : réinitialiser le cache
+     * Méthode pour les tests : réinitialiser le cache (fusionnée avec Expert Fix)
      */
-    public function clear_cache(): void {
+    public function clear_test_cache(): void {
         $this->user_validations = [];
         $this->products_requiring_test = [];
+        \error_log( "[WCQS EXPERT FIX] Cache Cart_Guard et tests vidés" );
     }
     
     /**
@@ -875,7 +876,7 @@ class Cart_Guard {
         
         // Ajouter debug JavaScript ULTRA détaillé + logique correcte
         ?>
-            <script type="text/javascript">
+        <script type="text/javascript">
             // Protection contre les chargements multiples
             if (window.wcqsDebugLoaded) {
                 console.log('⚠️ WCQS Debug déjà chargé - Arrêt pour éviter les doublons');
