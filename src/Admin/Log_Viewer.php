@@ -68,19 +68,46 @@ class Log_Viewer {
     private function init_hooks(): void {
         // Scripts et styles
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
-
-        // Enregistrer les hooks AJAX directement ici
+        
+        // ✅ CORRECTION SONNET : Enregistrer les hooks AJAX immédiatement
+        // au lieu d'attendre wp_loaded qui est déjà passé
+        $this->register_ajax_hooks();
+        
+        // Test d'écriture de log direct
+        $log_test_file = WP_CONTENT_DIR . '/wcqs_test_log.txt';
+        file_put_contents( $log_test_file, '[WCQS] Log_Viewer initialized at ' . current_time( 'Y-m-d H:i:s' ) . PHP_EOL, FILE_APPEND | LOCK_EX );
+        
+        // Debug: Log que le constructeur est appelé
+        error_log( '[WCQS] Log_Viewer: Constructor called with AJAX hooks registered immediately' );
+    }
+    
+    /**
+     * Enregistrer les hooks AJAX immédiatement
+     */
+    private function register_ajax_hooks(): void {
+        // Actions AJAX pour les utilisateurs connectés
         add_action( 'wp_ajax_wcqs_get_logs', [ $this, 'ajax_get_logs' ] );
         add_action( 'wp_ajax_wcqs_clear_logs', [ $this, 'ajax_clear_logs' ] );
         add_action( 'wp_ajax_wcqs_download_logs', [ $this, 'ajax_download_logs' ] );
         add_action( 'wp_ajax_wcqs_test_hooks', [ $this, 'ajax_test_hooks' ] );
         
-        // Hook de test de connexion
+        // Test que les hooks sont bien actifs
         add_action( 'wp_ajax_wcqs_test_connection', function() {
-            wp_send_json_success( [ 'message' => 'Connection OK', 'timestamp' => current_time( 'Y-m-d H:i:s' ) ] );
+            $log_test_file = WP_CONTENT_DIR . '/wcqs_test_log.txt';
+            file_put_contents( $log_test_file, '[WCQS] Test connection called at ' . current_time( 'Y-m-d H:i:s' ) . PHP_EOL, FILE_APPEND | LOCK_EX );
+            error_log( '[WCQS] Log_Viewer: Test connection called successfully' );
+            wp_send_json_success( [ 
+                'message' => 'Connection OK', 
+                'timestamp' => current_time( 'Y-m-d H:i:s' ),
+                'ajax_hooks_registered' => true 
+            ] );
         } );
         
-        error_log( '[WCQS] Log_Viewer: AJAX hooks registered in init_hooks()' );
+        // Debug: Log que les hooks AJAX sont enregistrés
+        error_log( '[WCQS] Log_Viewer: AJAX hooks registered immediately in constructor' );
+        
+        $log_test_file = WP_CONTENT_DIR . '/wcqs_test_log.txt';
+        file_put_contents( $log_test_file, '[WCQS] AJAX hooks registered at ' . current_time( 'Y-m-d H:i:s' ) . PHP_EOL, FILE_APPEND | LOCK_EX );
     }
     
     /**

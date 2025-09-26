@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.6.29';
+	const VERSION = '0.6.31';
 
 	/**
 	 * Flags par défaut du plugin
@@ -100,10 +100,13 @@ class Plugin {
 			add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
-			// Initialise AJAX handlers
+			// Initialise AJAX handlers IMMÉDIATEMENT
 			\WcQualiopiSteps\Admin\Ajax_Handler::init();
 			\WcQualiopiSteps\Admin\Csv_Handler::init();
 			\WcQualiopiSteps\Admin\Live_Control::init();
+			
+			// ✅ CORRECTION SONNET : Initialiser Log_Viewer IMMÉDIATEMENT comme les autres
+			$this->init_log_viewer();
 		}
 
 		// Assets frontend pour JavaScript
@@ -220,6 +223,27 @@ class Plugin {
 	}
 
 	/**
+	 * Initialise Log_Viewer immédiatement (comme les autres AJAX handlers)
+	 */
+	private function init_log_viewer(): void {
+		$log_viewer_file = WC_QUALIOPI_STEPS_PLUGIN_DIR . 'src/Admin/Log_Viewer.php';
+		
+		if ( file_exists( $log_viewer_file ) ) {
+			require_once $log_viewer_file;
+			// Initialiser le Log_Viewer IMMÉDIATEMENT
+			error_log( '[WCQS] Plugin: Initializing Log_Viewer IMMEDIATELY...' );
+			\WcQualiopiSteps\Admin\Log_Viewer::get_instance();
+			error_log( '[WCQS] Plugin: Log_Viewer initialized successfully IMMEDIATELY' );
+		} else {
+			add_action( 'admin_notices', static function () {
+				echo '<div class="notice notice-error"><p>'
+				   . esc_html__( 'WCQS: fichier Log_Viewer.php introuvable.', 'wc_qualiopi_steps' )
+				   . '</p></div>';
+			} );
+		}
+	}
+
+	/**
 	 * Récupère la version du plugin
 	 *
 	 * @return string
@@ -300,7 +324,6 @@ class Plugin {
 	public function register_admin_pages(): void {
 		// Sécurise le chargement de la page (évite Class Not Found si autoload/chemin KO)
 		$settings_file = WC_QUALIOPI_STEPS_PLUGIN_DIR . 'src/Admin/Settings_Page.php';
-		$log_viewer_file = WC_QUALIOPI_STEPS_PLUGIN_DIR . 'src/Admin/Log_Viewer.php';
 		
 		if ( file_exists( $settings_file ) ) {
 			require_once $settings_file;
@@ -311,21 +334,6 @@ class Plugin {
 				   . '</p></div>';
 			} );
 			return;
-		}
-		
-		// Charger Log_Viewer
-		if ( file_exists( $log_viewer_file ) ) {
-			require_once $log_viewer_file;
-			// Initialiser le Log_Viewer
-			error_log( '[WCQS] Plugin: Initializing Log_Viewer...' );
-			\WcQualiopiSteps\Admin\Log_Viewer::get_instance();
-			error_log( '[WCQS] Plugin: Log_Viewer initialized successfully' );
-		} else {
-			add_action( 'admin_notices', static function () {
-				echo '<div class="notice notice-error"><p>'
-				   . esc_html__( 'WCQS: fichier Log_Viewer.php introuvable.', 'wc_qualiopi_steps' )
-				   . '</p></div>';
-			} );
 		}
 
 		// Page sous Réglages
