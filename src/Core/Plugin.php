@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.6.2';
+	const VERSION = '0.6.6';
 
 	/**
 	 * Flags par défaut du plugin
@@ -98,13 +98,16 @@ class Plugin {
 		// Hooks admin pour l'étape 1
 		if ( is_admin() ) {
 			add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
-		// Initialise AJAX handlers
-		\WcQualiopiSteps\Admin\Ajax_Handler::init();
-		\WcQualiopiSteps\Admin\Csv_Handler::init();
-		\WcQualiopiSteps\Admin\Live_Control::init();
-	}
+			// Initialise AJAX handlers
+			\WcQualiopiSteps\Admin\Ajax_Handler::init();
+			\WcQualiopiSteps\Admin\Csv_Handler::init();
+			\WcQualiopiSteps\Admin\Live_Control::init();
+		}
+
+		// Assets frontend pour JavaScript
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 
 		// Chargement des modules.
 		$this->load_modules();
@@ -326,6 +329,17 @@ class Plugin {
 
 		// Variables AJAX pour JavaScript
 		wp_localize_script( 'wcqs-admin', 'wcqsAjax', array(
+			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( 'wcqs_ajax_nonce' )
+		) );
+	}
+
+	/**
+	 * Charge les assets frontend (nouveau)
+	 */
+	public function enqueue_frontend_assets(): void {
+		// Variables AJAX globales pour le frontend
+		wp_localize_script( 'jquery', 'wcqsAjax', array(
 			'ajaxurl' => admin_url( 'admin-ajax.php' ),
 			'nonce'   => wp_create_nonce( 'wcqs_ajax_nonce' )
 		) );
