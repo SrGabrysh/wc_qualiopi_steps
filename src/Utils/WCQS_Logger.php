@@ -15,6 +15,11 @@ defined( 'ABSPATH' ) || exit;
 class WCQS_Logger {
     
     /**
+     * Version du système de logging
+     */
+    const LOG_VERSION = '1.0.0';
+    
+    /**
      * Instance singleton
      */
     private static ?WCQS_Logger $instance = null;
@@ -65,9 +70,22 @@ class WCQS_Logger {
             }
         }
         
+        // Vérifier que le dossier est writable
+        if ( ! is_writable( $log_dir ) ) {
+            // Fallback sur un dossier temporaire
+            $temp_dir = sys_get_temp_dir();
+            $date = date( 'Y-m-d' );
+            $this->log_file = $temp_dir . '/wcqs-' . $date . '.log';
+            error_log( '[WCQS] Log directory not writable, using temp: ' . $this->log_file );
+            return;
+        }
+        
         // Nom du fichier avec date
         $date = date( 'Y-m-d' );
         $this->log_file = $log_dir . '/wcqs-' . $date . '.log';
+        
+        // Vérifier la rotation si nécessaire
+        $this->rotate_if_needed();
         
         // Log d'initialisation
         $this->log_raw( 'INFO', 'WCQS_Logger initialized - Log file: ' . $this->log_file );
@@ -97,8 +115,13 @@ class WCQS_Logger {
         
         $log_entry .= PHP_EOL;
         
-        // Écrire dans le fichier
-        file_put_contents( $this->log_file, $log_entry, FILE_APPEND | LOCK_EX );
+        // Écrire dans le fichier avec gestion d'erreur
+        $result = file_put_contents( $this->log_file, $log_entry, FILE_APPEND | LOCK_EX );
+        
+        // Si l'écriture échoue, fallback sur error_log
+        if ( false === $result ) {
+            error_log( '[WCQS] Log write failed to ' . $this->log_file . ' - ' . $level . ': ' . $message );
+        }
         
         // Si niveau ERROR ou CRITICAL, aussi dans error_log PHP
         if ( in_array( $level, ['ERROR', 'CRITICAL'] ) ) {
@@ -244,6 +267,84 @@ class WCQS_Logger {
         }
         
         $this->debug( $message, [ 'trace' => $trace_info ] );
+    }
+    
+    /**
+     * Rotation automatique des logs si nécessaire
+     */
+    private function rotate_if_needed(): void {
+        if ( ! file_exists( $this->log_file ) ) {
+            return;
+        }
+        
+        $max_size = 10485760; // 10MB
+        if ( filesize( $this->log_file ) > $max_size ) {
+            $archived = $this->log_file . '.' . time() . '.gz';
+            
+            // Compresser et archiver
+            $content = file_get_contents( $this->log_file );
+            if ( $content !== false ) {
+                $compressed = gzencode( $content );
+                if ( $compressed !== false ) {
+                    file_put_contents( $archived, $compressed );
+                    
+                    // Reset du fichier principal
+                    file_put_contents( $this->log_file, '' );
+                    
+                    $this->info( 'Log rotated to: ' . basename( $archived ), [
+                        'original_size' => strlen( $content ),
+                        'compressed_size' => strlen( $compressed )
+                    ] );
+                }
+            }
+        }
+    }
+    
+    /**
+     * Obtenir les statistiques du système de logs
+     */
+    public function get_stats(): array {
+        if ( ! file_exists( $this->log_file ) ) {
+            return [ 'exists' => false ];
+        }
+        
+        return [
+            'exists' => true,
+            'file_path' => $this->log_file,
+            'size' => filesize( $this->log_file ),
+            'size_human' => $this->format_bytes( filesize( $this->log_file ) ),
+            'lines' => count( file( $this->log_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES ) ),
+            'writable' => is_writable( $this->log_file ),
+            'last_modified' => filemtime( $this->log_file ),
+            'last_modified_human' => human_time_diff( filemtime( $this->log_file ) ) . ' ago',
+            'log_level' => $this->log_level
+        ];
+    }
+    
+    /**
+     * Formater la taille en bytes de manière lisible
+     */
+    private function format_bytes( int $size, int $precision = 2 ): string {
+        $units = [ 'B', 'KB', 'MB', 'GB', 'TB' ];
+        
+        for ( $i = 0; $size > 1024 && $i < count( $units ) - 1; $i++ ) {
+            $size /= 1024;
+        }
+        
+        return round( $size, $precision ) . ' ' . $units[ $i ];
+    }
+    
+    /**
+     * Changer le niveau de log
+     */
+    public function set_log_level( string $level ): void {
+        $valid_levels = [ 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL' ];
+        
+        if ( in_array( strtoupper( $level ), $valid_levels ) ) {
+            $this->log_level = strtoupper( $level );
+            update_option( 'wcqs_log_level', $this->log_level );
+            $this->info( 'Log level changed to: ' . $this->log_level );
+        }
     }
 }
 

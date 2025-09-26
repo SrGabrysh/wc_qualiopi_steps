@@ -17,6 +17,7 @@ return array(
     'WcQualiopiSteps\\Core\\Plugin' => $baseDir . '/src/Core/Plugin.php',
     'WcQualiopiSteps\\Frontend\\Cart_Guard' => $baseDir . '/src/Frontend/Cart_Guard.php',
     'WcQualiopiSteps\\Security\\WCQS_Token' => $baseDir . '/src/Security/WCQS_Token.php',
+    'WcQualiopiSteps\\Utils\\WCQS_Logger' => $baseDir . '/src/Utils/WCQS_Logger.php',
     'WcQualiopiSteps\\Utils\\WCQS_Mapping' => $baseDir . '/src/Utils/WCQS_Mapping.php',
     'WcQualiopiSteps\\Utils\\WCQS_Session' => $baseDir . '/src/Utils/WCQS_Session.php',
 );

@@ -3,7 +3,7 @@
  * Plugin Name: WC Qualiopi Steps
  * Plugin URI: https://github.com/SrGabrysh/wc_qualiopi_steps
  * Description: WC Qualiopi Steps est un plugin WooCommerce qui impose un test de positionnement (Qualiopi) avant paiement. Mapping produit→page de test via page d'options, jeton HMAC + session, garde checkout, logs d'audit et page fallback. Développement step-by-step, SRP, UX accessible.
- * Version: 0.6.38
+ * Version: 0.7.1
  * Author: TB-Web
  * Author URI: https://tb-web.fr
  * License: GPL v2 or later
@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
 
 // Constantes du plugin avec vérification pour éviter les warnings "already defined"
 if ( ! defined( 'WC_QUALIOPI_STEPS_VERSION' ) ) {
-	define( 'WC_QUALIOPI_STEPS_VERSION', '0.6.38' );
+	define( 'WC_QUALIOPI_STEPS_VERSION', '0.7.1' );
 }
 if ( ! defined( 'WC_QUALIOPI_STEPS_PLUGIN_FILE' ) ) {
 	define( 'WC_QUALIOPI_STEPS_PLUGIN_FILE', __FILE__ );
@@ -70,6 +70,27 @@ function wc_qualiopi_steps_check_requirements() {
 // Chargement de Composer avec vérification
 if ( wc_qualiopi_steps_check_requirements() && file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
 	require_once __DIR__ . '/vendor/autoload.php';
+	
+	// Gestion des erreurs PHP fatales pour logging
+	register_shutdown_function( function() {
+		$error = error_get_last();
+		if ( $error && in_array( $error['type'], [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ] ) ) {
+			if ( class_exists( '\\WcQualiopiSteps\\Utils\\WCQS_Logger' ) ) {
+				try {
+					$logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
+					$logger->critical( 'PHP Fatal Error detected', [
+						'message' => $error['message'],
+						'file' => $error['file'],
+						'line' => $error['line'],
+						'type' => $error['type']
+					] );
+				} catch ( Exception $e ) {
+					// Fallback sur error_log si le logger échoue
+					error_log( '[WCQS] Fatal error logging failed: ' . $e->getMessage() );
+				}
+			}
+		}
+	} );
 } else {
 	// Arrêter le chargement du plugin si les requirements ne sont pas remplis
 	return;
