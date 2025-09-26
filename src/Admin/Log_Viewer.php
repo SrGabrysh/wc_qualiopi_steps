@@ -77,6 +77,8 @@ class Log_Viewer {
         
         // Debug: Log que les hooks sont enregistrés
         error_log( '[WCQS] Log_Viewer: AJAX hooks registered' );
+        error_log( '[WCQS] Log_Viewer: Constructor called, hooks being registered' );
+        error_log( '[WCQS] Log_Viewer: Current user can manage options: ' . ( current_user_can( 'manage_options' ) ? 'YES' : 'NO' ) );
         
         // Test que les hooks sont bien actifs
         add_action( 'wp_ajax_wcqs_test_connection', function() {

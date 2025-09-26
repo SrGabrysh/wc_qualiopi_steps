@@ -41,32 +41,36 @@
     },
 
     testConnection: function () {
-      console.log('WCQS Log Viewer: Testing connection...');
-      
+      console.log("WCQS Log Viewer: Testing connection...");
+
       // Vérifier que les variables sont disponibles
-      if (typeof wcqsLogViewer === 'undefined') {
-        console.error('WCQS Log Viewer: wcqsLogViewer object not found!');
-        alert('Configuration JavaScript manquante - wcqsLogViewer non défini');
+      if (typeof wcqsLogViewer === "undefined") {
+        console.error("WCQS Log Viewer: wcqsLogViewer object not found!");
+        alert("Configuration JavaScript manquante - wcqsLogViewer non défini");
         return;
       }
-      
-      console.log('WCQS Log Viewer: wcqsLogViewer object:', wcqsLogViewer);
-      
+
+      console.log("WCQS Log Viewer: wcqsLogViewer object:", wcqsLogViewer);
+
       const data = {
         action: "wcqs_test_connection",
-        nonce: wcqsLogViewer.nonce || '',
+        nonce: wcqsLogViewer.nonce || "",
       };
-      
-      console.log('WCQS Log Viewer: Test connection data:', data);
-      
+
+      console.log("WCQS Log Viewer: Test connection data:", data);
+
       $.post(wcqsLogViewer.ajax_url, data)
-        .done(function(response) {
-          console.log('WCQS Log Viewer: Test connection success:', response);
-          alert('Test connexion réussi: ' + JSON.stringify(response));
+        .done(function (response) {
+          console.log("WCQS Log Viewer: Test connection success:", response);
+          alert("Test connexion réussi: " + JSON.stringify(response));
         })
-        .fail(function(xhr, status, error) {
-          console.error('WCQS Log Viewer: Test connection failed:', {xhr, status, error});
-          alert('Test connexion échoué: ' + status + ' - ' + error);
+        .fail(function (xhr, status, error) {
+          console.error("WCQS Log Viewer: Test connection failed:", {
+            xhr,
+            status,
+            error,
+          });
+          alert("Test connexion échoué: " + status + " - " + error);
         });
     },
 
@@ -74,9 +78,9 @@
       if (isLoading) return;
 
       // Vérifier que les variables sont disponibles
-      if (typeof wcqsLogViewer === 'undefined') {
-        console.error('WCQS Log Viewer: wcqsLogViewer object not found!');
-        this.showError('Configuration JavaScript manquante');
+      if (typeof wcqsLogViewer === "undefined") {
+        console.error("WCQS Log Viewer: wcqsLogViewer object not found!");
+        this.showError("Configuration JavaScript manquante");
         return;
       }
 
@@ -85,13 +89,13 @@
 
       const data = {
         action: "wcqs_get_logs",
-        nonce: wcqsLogViewer.nonce || '',
-        time_filter: $("#wcqs-time-filter").val() || '60',
-        level_filter: $("#wcqs-level-filter").val() || 'all',
-        source_filter: $("#wcqs-source-filter").val() || 'all',
+        nonce: wcqsLogViewer.nonce || "",
+        time_filter: $("#wcqs-time-filter").val() || "60",
+        level_filter: $("#wcqs-level-filter").val() || "all",
+        source_filter: $("#wcqs-source-filter").val() || "all",
       };
-      
-      console.log('WCQS Log Viewer - Sending data:', data);
+
+      console.log("WCQS Log Viewer - Sending data:", data);
 
       $.post(wcqsLogViewer.ajax_url, data)
         .done(this.displayLogs.bind(this))

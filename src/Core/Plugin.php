@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.6.21';
+	const VERSION = '0.6.23';
 
 	/**
 	 * Flags par défaut du plugin
@@ -317,7 +317,9 @@ class Plugin {
 		if ( file_exists( $log_viewer_file ) ) {
 			require_once $log_viewer_file;
 			// Initialiser le Log_Viewer
+			error_log( '[WCQS] Plugin: Initializing Log_Viewer...' );
 			\WcQualiopiSteps\Admin\Log_Viewer::get_instance();
+			error_log( '[WCQS] Plugin: Log_Viewer initialized successfully' );
 		} else {
 			add_action( 'admin_notices', static function () {
 				echo '<div class="notice notice-error"><p>'
