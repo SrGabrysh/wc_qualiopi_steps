@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.6.35';
+	const VERSION = '0.6.37';
 
 	/**
 	 * Flags par défaut du plugin
@@ -69,6 +69,18 @@ class Plugin {
 	 * Constructeur privé (Singleton)
 	 */
 	private function __construct() {
+		// Initialiser le logger EN PREMIER
+		if ( class_exists( '\\WcQualiopiSteps\\Utils\\WCQS_Logger' ) ) {
+			$logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
+			$logger->info( '=== WCQS PLUGIN INITIALIZATION START ===' );
+			$logger->info( 'Plugin version: ' . self::VERSION );
+			$logger->info( 'WordPress version: ' . get_bloginfo( 'version' ) );
+			$logger->info( 'PHP version: ' . PHP_VERSION );
+			$logger->info( 'Current user ID: ' . get_current_user_id() );
+			$logger->info( 'Is admin: ' . ( is_admin() ? 'YES' : 'NO' ) );
+			$logger->trace( 'Plugin constructor called' );
+		}
+		
 		$this->init();
 	}
 
@@ -88,32 +100,45 @@ class Plugin {
 	 * Initialisation du plugin
 	 */
 	private function init() {
+		$logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
+		
 		// Normalisation des options au chargement
+		$logger->debug( 'Normalizing options...' );
 		$this->normalize_options();
-
-		// Hooks WordPress.
+		
+		// Hooks WordPress
+		$logger->debug( 'Registering WordPress hooks...' );
 		add_action( 'init', array( $this, 'on_init' ) );
 		add_action( 'admin_init', array( $this, 'on_admin_init' ) );
-
-		// Hooks admin pour l'étape 1
+		
+		// Hooks admin
 		if ( is_admin() ) {
+			$logger->debug( 'Admin context detected, registering admin hooks...' );
 			add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-
-			// Initialise AJAX handlers IMMÉDIATEMENT
+			
+			// Initialise AJAX handlers
+			$logger->debug( 'Initializing AJAX handlers...' );
 			\WcQualiopiSteps\Admin\Ajax_Handler::init();
 			\WcQualiopiSteps\Admin\Csv_Handler::init();
 			\WcQualiopiSteps\Admin\Live_Control::init();
 			
-			// ✅ CORRECTION SONNET : Initialiser Log_Viewer IMMÉDIATEMENT comme les autres
+			// Initialiser Log_Viewer
+			$logger->debug( 'Initializing Log_Viewer...' );
 			$this->init_log_viewer();
+		} else {
+			$logger->debug( 'Frontend context detected' );
 		}
-
-		// Assets frontend pour JavaScript
+		
+		// Assets frontend
+		$logger->debug( 'Registering frontend assets...' );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
-
-		// Chargement des modules.
+		
+		// Chargement des modules
+		$logger->debug( 'Loading plugin modules...' );
 		$this->load_modules();
+		
+		$logger->info( '=== WCQS PLUGIN INITIALIZATION COMPLETE ===' );
 	}
 
 	/**

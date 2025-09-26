@@ -50,26 +50,17 @@ class Log_Viewer {
     }
     
     /**
-     * Initialiser les chemins des logs - VERSION BRUTALE comme quick_logs.py
+     * Initialiser les chemins des logs
      */
     private function init_log_paths(): void {
-        // 🚨 APPROCHE BRUTALE : Utiliser les MÊMES chemins que quick_logs.py
+        // Utiliser le chemin du logger centralisé
+        $logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
         $this->log_paths = [
-            'wc_logs' => '/sites/tb-formation.fr/files/wp-content/uploads/wc-logs/',
-            'debug_log' => '/sites/tb-formation.fr/files/wp-content/uploads/debug-log-manager/',
-            'debug_specific' => '/sites/tb-formation.fr/files/wp-content/uploads/debug-log-manager/institutpresentation5toutebellecom_20250224144357986406_debug.log'
+            'wcqs_main' => $logger->get_log_file()
         ];
         
-        // 🔍 DEBUG: Afficher les chemins utilisés
-        error_log( '[WCQS] Log_Viewer: BRUTAL MODE - Using exact paths from quick_logs.py' );
-        error_log( '[WCQS] Log_Viewer: WC logs path = ' . $this->log_paths['wc_logs'] );
-        error_log( '[WCQS] Log_Viewer: Debug logs path = ' . $this->log_paths['debug_log'] );
-        error_log( '[WCQS] Log_Viewer: Debug specific = ' . $this->log_paths['debug_specific'] );
-        
-        // Vérifier si les fichiers/dossiers existent
-        error_log( '[WCQS] Log_Viewer: WC logs dir exists = ' . ( is_dir( $this->log_paths['wc_logs'] ) ? 'YES' : 'NO' ) );
-        error_log( '[WCQS] Log_Viewer: Debug logs dir exists = ' . ( is_dir( $this->log_paths['debug_log'] ) ? 'YES' : 'NO' ) );
-        error_log( '[WCQS] Log_Viewer: Debug specific file exists = ' . ( file_exists( $this->log_paths['debug_specific'] ) ? 'YES' : 'NO' ) );
+        // Log pour debug
+        $logger->debug( 'Log_Viewer: Initialized with log file: ' . $this->log_paths['wcqs_main'] );
     }
     
     /**
@@ -639,14 +630,30 @@ class Log_Viewer {
     }
     
     /**
-     * Récupérer les logs filtrés - VERSION BRUTALE comme quick_logs.py
+     * Récupérer les logs filtrés
      */
     private function get_filtered_logs( string $time_filter, string $level_filter, string $source_filter ): array {
-        error_log( '[WCQS] Log_Viewer: BRUTAL MODE - get_filtered_logs called with filters: time=' . $time_filter . ', level=' . $level_filter . ', source=' . $source_filter );
+        $logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
         
-        $logs = [];
+        // Calculer le timestamp de début selon le filtre
+        $since_timestamp = null;
+        if ( $time_filter !== 'all' && is_numeric( $time_filter ) ) {
+            $since_timestamp = time() - ( (int) $time_filter * 60 );
+        }
+        
+        // Lire les logs via le logger
+        $logs = $logger->read_logs( 500, $since_timestamp );
+        
+        // Filtrer par niveau si nécessaire
+        if ( $level_filter !== 'all' ) {
+            $logs = array_filter( $logs, function( $log ) use ( $level_filter ) {
+                return strtolower( $log['level'] ) === strtolower( $level_filter );
+            } );
+        }
+        
+        // Calculer les statistiques
         $stats = [
-            'total' => 0,
+            'total' => count( $logs ),
             'errors' => 0,
             'warnings' => 0,
             'info' => 0,
@@ -654,17 +661,10 @@ class Log_Viewer {
             'last_activity' => null
         ];
         
-        // 🚨 MÉTHODE BRUTALE : Lire EXACTEMENT comme quick_logs.py
-        $logs = $this->brutal_read_logs();
-        
-        error_log( '[WCQS] Log_Viewer: BRUTAL MODE - Found ' . count( $logs ) . ' total entries' );
-        
-        // Calculer les statistiques
         foreach ( $logs as $log ) {
-            $stats['total']++;
-            
-            switch ( $log['level'] ) {
+            switch ( strtolower( $log['level'] ) ) {
                 case 'error':
+                case 'critical':
                     $stats['errors']++;
                     break;
                 case 'warning':
@@ -683,266 +683,28 @@ class Log_Viewer {
             }
         }
         
-        // Formater la dernière activité
         if ( $stats['last_activity'] ) {
             $stats['last_activity'] = human_time_diff( $stats['last_activity'] ) . ' ago';
         } else {
             $stats['last_activity'] = 'Aucune';
         }
         
-        // Limiter à 30 entrées comme quick_logs.py
-        $logs = array_slice( $logs, 0, 30 );
-        
-        error_log( '[WCQS] Log_Viewer: BRUTAL MODE - Returning ' . count( $logs ) . ' entries after limit' );
+        // Transformer pour l'affichage
+        $formatted_logs = [];
+        foreach ( array_slice( $logs, -100 ) as $log ) { // Limiter à 100 pour l'affichage
+            $formatted_logs[] = [
+                'timestamp' => $log['timestamp'],
+                'datetime' => $log['datetime'],
+                'level' => strtolower( $log['level'] ),
+                'source' => 'wcqs_main',
+                'message' => $log['message'],
+                'raw_line' => sprintf( '[%s] %s %s', $log['datetime'], $log['level'], $log['message'] )
+            ];
+        }
         
         return [
-            'entries' => $logs,
+            'entries' => array_reverse( $formatted_logs ), // Plus récent en premier
             'stats' => $stats
-        ];
-    }
-    
-    /**
-     * Lecture brutale des logs - EXACTEMENT comme quick_logs.py
-     */
-    private function brutal_read_logs(): array {
-        $logs = [];
-        
-        error_log( '[WCQS] Log_Viewer: BRUTAL MODE - Starting brutal_read_logs()' );
-        
-        // 1. Lire les logs WooCommerce (comme quick_logs.py ligne 67)
-        $wc_pattern = $this->log_paths['wc_logs'] . '*wcqs*';
-        $wc_files = glob( $wc_pattern );
-        
-        error_log( '[WCQS] Log_Viewer: BRUTAL MODE - WC pattern: ' . $wc_pattern );
-        error_log( '[WCQS] Log_Viewer: BRUTAL MODE - WC files found: ' . count( $wc_files ) );
-        
-        if ( $wc_files ) {
-            error_log( '[WCQS] Log_Viewer: BRUTAL MODE - WC files: ' . implode( ', ', $wc_files ) );
-            
-            foreach ( $wc_files as $file ) {
-                if ( is_readable( $file ) ) {
-                    $content = file_get_contents( $file );
-                    if ( $content ) {
-                        $lines = explode( "\n", $content );
-                        $lines = array_slice( $lines, -30 ); // Dernières 30 lignes
-                        
-                        foreach ( $lines as $line ) {
-                            $line = trim( $line );
-                            if ( ! empty( $line ) ) {
-                                $logs[] = [
-                                    'timestamp' => time(),
-                                    'datetime' => date( 'Y-m-d H:i:s' ),
-                                    'level' => 'info',
-                                    'source' => 'wc_logs',
-                                    'message' => $line,
-                                    'raw_line' => $line
-                                ];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // 2. Lire le fichier debug spécifique
-        if ( file_exists( $this->log_paths['debug_specific'] ) && is_readable( $this->log_paths['debug_specific'] ) ) {
-            error_log( '[WCQS] Log_Viewer: BRUTAL MODE - Reading debug specific file' );
-            
-            $content = file_get_contents( $this->log_paths['debug_specific'] );
-            if ( $content ) {
-                $lines = explode( "\n", $content );
-                $lines = array_slice( $lines, -15 ); // Dernières 15 lignes
-                
-                foreach ( $lines as $line ) {
-                    $line = trim( $line );
-                    if ( ! empty( $line ) && ( 
-                        strpos( $line, 'WCQS' ) !== false || 
-                        strpos( $line, 'Cart_Guard' ) !== false ||
-                        strpos( $line, 'wc_qualiopi_steps' ) !== false
-                    ) ) {
-                        $logs[] = [
-                            'timestamp' => time(),
-                            'datetime' => date( 'Y-m-d H:i:s' ),
-                            'level' => 'debug',
-                            'source' => 'debug_log',
-                            'message' => $line,
-                            'raw_line' => $line
-                        ];
-                    }
-                }
-            }
-        }
-        
-        error_log( '[WCQS] Log_Viewer: BRUTAL MODE - Total logs collected: ' . count( $logs ) );
-        
-        return $logs;
-    }
-    
-    /**
-     * Lire les logs WooCommerce
-     */
-    private function read_woocommerce_logs( ?int $time_limit ): array {
-        $logs = [];
-        $wc_log_dir = $this->log_paths['wc_logs'];
-        
-        error_log( '[WCQS] Log_Viewer: Reading WC logs from: ' . $wc_log_dir );
-        
-        if ( ! is_dir( $wc_log_dir ) ) {
-            error_log( '[WCQS] Log_Viewer: WC logs directory does not exist: ' . $wc_log_dir );
-            return $logs;
-        }
-        
-        // Chercher tous les fichiers de logs WCQS
-        $pattern = $wc_log_dir . 'wcqs_cart_guard_trace-*.log';
-        $log_files = glob( $pattern );
-        
-        error_log( '[WCQS] Log_Viewer: WC log pattern: ' . $pattern );
-        error_log( '[WCQS] Log_Viewer: Found WC log files: ' . count( $log_files ) );
-        
-        if ( $log_files ) {
-            error_log( '[WCQS] Log_Viewer: WC log files found: ' . implode( ', ', $log_files ) );
-        }
-        
-        foreach ( $log_files as $log_file ) {
-            if ( ! is_readable( $log_file ) ) {
-                error_log( '[WCQS] Log_Viewer: WC log file not readable: ' . $log_file );
-                continue;
-            }
-            
-            $file_logs = $this->parse_log_file( $log_file, $time_limit, 'wc_logs' );
-            error_log( '[WCQS] Log_Viewer: Parsed ' . count( $file_logs ) . ' entries from: ' . $log_file );
-            $logs = array_merge( $logs, $file_logs );
-        }
-        
-        error_log( '[WCQS] Log_Viewer: Total WC logs found: ' . count( $logs ) );
-        return $logs;
-    }
-    
-    /**
-     * Lire les logs debug WordPress
-     */
-    private function read_debug_logs( ?int $time_limit ): array {
-        $logs = [];
-        $debug_log_dir = $this->log_paths['debug_log'];
-        
-        error_log( '[WCQS] Log_Viewer: Reading debug logs from: ' . $debug_log_dir );
-        
-        if ( ! is_dir( $debug_log_dir ) ) {
-            error_log( '[WCQS] Log_Viewer: Debug logs directory does not exist: ' . $debug_log_dir );
-            return $logs;
-        }
-        
-        // Chercher les fichiers debug récents
-        $pattern = $debug_log_dir . '*debug.log';
-        $log_files = glob( $pattern );
-        
-        error_log( '[WCQS] Log_Viewer: Debug log pattern: ' . $pattern );
-        error_log( '[WCQS] Log_Viewer: Found debug log files: ' . count( $log_files ) );
-        
-        if ( $log_files ) {
-            error_log( '[WCQS] Log_Viewer: Debug log files found: ' . implode( ', ', $log_files ) );
-        }
-        
-        // Trier par date de modification
-        usort( $log_files, function( $a, $b ) {
-            return filemtime( $b ) - filemtime( $a );
-        } );
-        
-        // Prendre seulement les 3 plus récents
-        $log_files = array_slice( $log_files, 0, 3 );
-        
-        foreach ( $log_files as $log_file ) {
-            if ( ! is_readable( $log_file ) ) {
-                error_log( '[WCQS] Log_Viewer: Debug log file not readable: ' . $log_file );
-                continue;
-            }
-            
-            $file_logs = $this->parse_log_file( $log_file, $time_limit, 'debug_log' );
-            error_log( '[WCQS] Log_Viewer: Parsed ' . count( $file_logs ) . ' entries from: ' . $log_file );
-            $logs = array_merge( $logs, $file_logs );
-        }
-        
-        error_log( '[WCQS] Log_Viewer: Total debug logs found: ' . count( $logs ) );
-        return $logs;
-    }
-    
-    /**
-     * Parser un fichier de log
-     */
-    private function parse_log_file( string $log_file, ?int $time_limit, string $source ): array {
-        $logs = [];
-        
-        $content = file_get_contents( $log_file );
-        if ( false === $content ) {
-            return $logs;
-        }
-        
-        $lines = explode( "\n", $content );
-        
-        foreach ( $lines as $line ) {
-            $line = trim( $line );
-            if ( empty( $line ) ) {
-                continue;
-            }
-            
-            $parsed = $this->parse_log_line( $line, $source );
-            if ( null === $parsed ) {
-                continue;
-            }
-            
-            // Filtrer par temps si nécessaire
-            if ( $time_limit && $parsed['timestamp'] < $time_limit ) {
-                continue;
-            }
-            
-            $logs[] = $parsed;
-        }
-        
-        return $logs;
-    }
-    
-    /**
-     * Parser une ligne de log
-     */
-    private function parse_log_line( string $line, string $source ): ?array {
-        // Pattern pour logs WooCommerce : [timestamp] LEVEL message
-        if ( preg_match( '/^\[([^\]]+)\]\s+(\w+):\s*(.+)$/', $line, $matches ) ) {
-            $timestamp = strtotime( $matches[1] );
-            $level = strtolower( $matches[2] );
-            $message = $matches[3];
-        }
-        // Pattern pour logs WordPress : [timestamp] message
-        elseif ( preg_match( '/^\[([^\]]+)\]\s+(.+)$/', $line, $matches ) ) {
-            $timestamp = strtotime( $matches[1] );
-            $message = $matches[2];
-            
-            // Déterminer le niveau basé sur le contenu
-            if ( false !== strpos( $message, 'ERROR' ) || false !== strpos( $message, 'Fatal' ) ) {
-                $level = 'error';
-            } elseif ( false !== strpos( $message, 'WARNING' ) || false !== strpos( $message, 'Warning' ) ) {
-                $level = 'warning';
-            } elseif ( false !== strpos( $message, 'DEBUG' ) || false !== strpos( $message, 'Debug' ) ) {
-                $level = 'debug';
-            } else {
-                $level = 'info';
-            }
-        }
-        // Ligne sans format reconnu
-        else {
-            return null;
-        }
-        
-        if ( false === $timestamp ) {
-            $timestamp = time();
-        }
-        
-        return [
-            'timestamp' => $timestamp,
-            'datetime' => date( 'Y-m-d H:i:s', $timestamp ),
-            'level' => $level,
-            'source' => $source,
-            'message' => is_string( $message ) ? $message : print_r( $message, true ),
-            'raw_line' => $line
         ];
     }
     
@@ -950,25 +712,10 @@ class Log_Viewer {
      * Vider tous les logs
      */
     private function clear_all_logs(): bool {
-        $cleared = true;
-        
-        // Vider les logs WooCommerce
-        $wc_pattern = $this->log_paths['wc_logs'] . 'wcqs_cart_guard_trace-*.log';
-        $wc_files = glob( $wc_pattern );
-        
-        foreach ( $wc_files as $file ) {
-            if ( is_writable( $file ) ) {
-                file_put_contents( $file, '' );
-            } else {
-                $cleared = false;
-            }
-        }
-        
-        // Log de l'action
-        error_log( '[WCQS] Log_Viewer: Logs cleared by admin user at ' . current_time( 'Y-m-d H:i:s' ) );
-        
-        return $cleared;
+        $logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
+        return $logger->clear_logs();
     }
+    
     
     /**
      * Tester Cart Guard

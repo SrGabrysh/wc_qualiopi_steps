@@ -80,40 +80,54 @@ class Cart_Guard {
      * CORRECTION EXPERTS: Hooks multiples + garde serveur universelle
      */
     private function init_hooks(): void {
-        error_log( '[WCQS] Cart_Guard: Initializing hooks (Expert Fix)...' );
+        $logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
+        $logger->info( 'Cart_Guard: Initializing hooks...' );
+        
+        // Liste tous les hooks qu'on enregistre
+        $hooks_registered = [];
         
         // CORRECTION: Toujours enregistrer les hooks, vérifier conditions dans callbacks
         
         // 1) Garde universelle par redirection (classique + Blocks)
         \add_action( 'template_redirect', [ $this, 'guard_template_redirect' ], 0 );
+        $hooks_registered[] = 'template_redirect';
         
         // 2) Hooks WooCommerce classiques (fallback)
         \add_action( 'woocommerce_proceed_to_checkout', [ $this, 'maybe_replace_checkout_button' ], 5 );
         \add_action( 'woocommerce_proceed_to_checkout', [ $this, 'maybe_add_test_notice' ], 10 );
+        $hooks_registered[] = 'woocommerce_proceed_to_checkout (x2)';
         
         // 3) Hooks alternatifs plus fiables
         \add_action( 'woocommerce_cart_actions', [ $this, 'maybe_add_test_notice' ], 10 );
         \add_action( 'woocommerce_before_cart_totals', [ $this, 'maybe_add_test_notice_before_totals' ], 5 );
+        $hooks_registered[] = 'woocommerce_cart_actions';
+        $hooks_registered[] = 'woocommerce_before_cart_totals';
         
         // 4) Intercepter Store API (Checkout Block)
         \add_filter( 'rest_request_before_callbacks', [ $this, 'intercept_store_api_checkout' ], 5, 3 );
+        $hooks_registered[] = 'rest_request_before_callbacks';
         
         // 5) Notices serveur (compatibles Blocks)
         \add_action( 'wp', [ $this, 'maybe_add_server_notice' ] );
+        $hooks_registered[] = 'wp';
         
         // 6) Filtrer URL checkout (classique)
         \add_filter( 'woocommerce_get_checkout_url', [ $this, 'filter_checkout_url_when_blocked' ], 10, 1 );
+        $hooks_registered[] = 'woocommerce_get_checkout_url';
         
         // Styles et scripts
         \add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+        $hooks_registered[] = 'wp_enqueue_scripts';
         
         // Debug hook pour vérifier l'exécution
         \add_action( 'wp_footer', [ $this, 'debug_cart_state' ] );
+        $hooks_registered[] = 'wp_footer (debug)';
         
         // Modification du bouton pour WooCommerce Blocks (JavaScript)
         \add_action( 'wp_footer', [ $this, 'modify_checkout_button_blocks' ] );
+        $hooks_registered[] = 'wp_footer (blocks)';
         
-        error_log( '[WCQS] Cart_Guard: All hooks initialized (Expert Fix)' );
+        $logger->info( 'Cart_Guard: Hooks registered', [ 'hooks' => $hooks_registered ] );
     }
     
     /**
@@ -201,21 +215,21 @@ class Cart_Guard {
      * CORRECTION EXPERTS: Vérifier conditions dans callback + Test d'isolation Expert #5
      */
     public function maybe_replace_checkout_button(): void {
-        $this->log_trace( "Hook 'woocommerce_proceed_to_checkout' FIRED (Priority 5) - BUTTON REPLACE" );
-        error_log( '[WCQS] Cart_Guard: maybe_replace_checkout_button triggered' );
+        $logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
+        $logger->debug( "Hook 'woocommerce_proceed_to_checkout' FIRED (Priority 5) - BUTTON REPLACE" );
         
         // CORRECTION: Vérifier les conditions ici, pas à l'init
         if ( ! $this->is_cart_enforcement_enabled() ) {
-            error_log( '[WCQS] Cart_Guard: Enforcement disabled, skipping' );
+            $logger->debug( 'Cart_Guard: Enforcement disabled, skipping' );
             return;
         }
         
         if ( ! $this->should_block_checkout() ) {
-            error_log( '[WCQS] Cart_Guard: Should not block checkout, skipping' );
+            $logger->debug( 'Cart_Guard: Should not block checkout, skipping' );
             return;
         }
         
-        error_log( '[WCQS] Cart_Guard: Blocking checkout button' );
+        $logger->info( 'Cart_Guard: Blocking checkout button' );
         
         // Supprimer le bouton checkout par défaut
         \remove_action( 'woocommerce_proceed_to_checkout', 'woocommerce_button_proceed_to_checkout', 20 );
@@ -233,23 +247,23 @@ class Cart_Guard {
      * CORRECTION EXPERTS: Vérifier conditions dans callback + Test d'isolation Expert #5
      */
     public function maybe_add_test_notice(): void {
-        $this->log_trace( "Hook 'woocommerce_proceed_to_checkout' FIRED (Priority 10) - ADD NOTICE" );
-        error_log( '[WCQS] Cart_Guard: maybe_add_test_notice triggered' );
+        $logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
+        $logger->debug( "Hook 'woocommerce_proceed_to_checkout' FIRED (Priority 10) - ADD NOTICE" );
         
         // CORRECTION: Vérifier les conditions ici
         if ( ! $this->is_cart_enforcement_enabled() ) {
-            error_log( '[WCQS] Cart_Guard: Enforcement disabled, no notice needed' );
+            $logger->debug( 'Cart_Guard: Enforcement disabled, no notice needed' );
             return;
         }
         
         $pending_tests = $this->get_pending_tests_info();
         
         if ( empty( $pending_tests ) ) {
-            error_log( '[WCQS] Cart_Guard: No pending tests, no notice needed' );
+            $logger->debug( 'Cart_Guard: No pending tests, no notice needed' );
             return;
         }
         
-        error_log( '[WCQS] Cart_Guard: Adding test notices for ' . count( $pending_tests ) . ' tests' );
+        $logger->info( 'Cart_Guard: Adding test notices for ' . count( $pending_tests ) . ' tests' );
         
         // Afficher la notice pour chaque test requis
         foreach ( $pending_tests as $test_info ) {
@@ -264,25 +278,25 @@ class Cart_Guard {
      * @return bool
      */
     private function should_block_checkout(): bool {
-        // Vérifier que WooCommerce est disponible
+        $logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
+        
         if ( ! function_exists( 'WC' ) || ! \WC() || ! \WC()->cart ) {
+            $logger->debug( 'Cart_Guard: WooCommerce not available' );
             return false;
         }
         
         if ( \WC()->cart->is_empty() ) {
+            $logger->debug( 'Cart_Guard: Cart is empty' );
             return false;
         }
         
         $pending_tests = $this->get_pending_tests_info();
         $should_block = ! empty( $pending_tests );
         
-        // Log pour diagnostic
-        if ( $should_block ) {
-            $this->log_trace( "Blocking checkout - Pending tests found: " . count( $pending_tests ) );
-            error_log( '[WCQS] Cart_Guard: Blocking checkout - ' . count( $pending_tests ) . ' pending tests' );
-        } else {
-            $this->log_trace( "Allowing checkout - No pending tests" );
-        }
+        $logger->info( 
+            $should_block ? 'Cart_Guard: Blocking checkout' : 'Cart_Guard: Allowing checkout',
+            [ 'pending_tests' => count( $pending_tests ) ]
+        );
         
         return $should_block;
     }
@@ -559,8 +573,8 @@ class Cart_Guard {
      * Hook alternatif avant les totaux (Expert #2)
      */
     public function maybe_add_test_notice_before_totals(): void {
-        $this->log_trace( "Hook 'woocommerce_before_cart_totals' FIRED - ALTERNATIVE HOOK" );
-        error_log( '[WCQS] Cart_Guard: maybe_add_test_notice_before_totals triggered' );
+        $logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
+        $logger->debug( "Hook 'woocommerce_before_cart_totals' FIRED - ALTERNATIVE HOOK" );
         $this->maybe_add_test_notice();
     }
     
