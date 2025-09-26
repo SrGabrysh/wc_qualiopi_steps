@@ -119,9 +119,13 @@ class Cart_Guard {
         \add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         $hooks_registered[] = 'wp_enqueue_scripts';
         
-        // Debug hook pour vérifier l'exécution
+        // Debug hook pour vérifier l'exécution - FORCER SUR TOUTES LES PAGES
         \add_action( 'wp_footer', [ $this, 'debug_cart_state' ] );
+        \add_action( 'wp_head', [ $this, 'debug_cart_state' ] );
+        \add_action( 'init', [ $this, 'debug_cart_state' ] );
         $hooks_registered[] = 'wp_footer (debug)';
+        $hooks_registered[] = 'wp_head (debug)';  
+        $hooks_registered[] = 'init (debug)';
         
         // Modification du bouton pour WooCommerce Blocks (JavaScript)
         \add_action( 'wp_footer', [ $this, 'modify_checkout_button_blocks' ] );
