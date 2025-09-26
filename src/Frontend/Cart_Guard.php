@@ -88,7 +88,9 @@ class Cart_Guard {
      */
     private function is_cart_enforcement_enabled(): bool {
         $flags = Plugin::get_flags();
-        return ! empty( $flags['enforce_cart'] );
+        $enabled = ! empty( $flags['enforce_cart'] );
+        \error_log( 'WCQS Cart_Guard: Enforcement enabled: ' . ( $enabled ? 'YES' : 'NO' ) . ' (flags: ' . json_encode( $flags ) . ')' );
+        return $enabled;
     }
     
     /**
@@ -150,25 +152,36 @@ class Cart_Guard {
      */
     private function get_pending_tests_info(): array {
         if ( ! function_exists( 'WC' ) || ! \WC() || ! \WC()->cart ) {
+            \error_log( 'WCQS Cart_Guard: WooCommerce not available' );
             return [];
         }
         
         $pending_tests = [];
         $current_user_id = \get_current_user_id();
+        $cart_items = \WC()->cart->get_cart();
         
-        foreach ( \WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+        \error_log( 'WCQS Cart_Guard: Checking ' . count( $cart_items ) . ' cart items for user ' . $current_user_id );
+        
+        foreach ( $cart_items as $cart_item_key => $cart_item ) {
             $product_id = $cart_item['product_id'];
+            \error_log( 'WCQS Cart_Guard: Checking product ' . $product_id );
             
             // Vérifier si ce produit nécessite un test
             $mapping = WCQS_Mapping::get_for_product( $product_id );
+            \error_log( 'WCQS Cart_Guard: Mapping for product ' . $product_id . ': ' . ( $mapping ? 'found' : 'not found' ) );
+            
             if ( ! $mapping || empty( $mapping['active'] ) ) {
+                \error_log( 'WCQS Cart_Guard: Product ' . $product_id . ' - no mapping or inactive' );
                 continue;
             }
             
             // Vérifier si le test est déjà validé
             if ( $this->is_test_validated( $current_user_id, $product_id ) ) {
+                \error_log( 'WCQS Cart_Guard: Product ' . $product_id . ' - test already validated' );
                 continue;
             }
+            
+            \error_log( 'WCQS Cart_Guard: Product ' . $product_id . ' - adding to pending tests' );
             
             // Ajouter aux tests en attente
             $pending_tests[] = [
@@ -180,6 +193,7 @@ class Cart_Guard {
             ];
         }
         
+        \error_log( 'WCQS Cart_Guard: Found ' . count( $pending_tests ) . ' pending tests' );
         return $pending_tests;
     }
     
