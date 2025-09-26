@@ -774,9 +774,17 @@ class Cart_Guard {
      * Debug de l'état du panier (Expert #2)
      */
     public function debug_cart_state(): void {
+        // FORCER LE LOG POUR DIAGNOSTIC
+        error_log( "[WCQS BACKEND] ===== DEBUG_CART_STATE APPELÉE =====" );
+        error_log( "[WCQS BACKEND] Current URL: " . $_SERVER['REQUEST_URI'] ?? 'N/A' );
+        error_log( "[WCQS BACKEND] Is cart page check: " . ( $this->is_cart_page() ? 'YES' : 'NO' ) );
+        
         if ( ! $this->is_cart_page() ) {
+            error_log( "[WCQS BACKEND] ❌ Not cart page - STOPPING debug" );
             return;
         }
+        
+        error_log( "[WCQS BACKEND] ✅ IS CART PAGE - Continuing with debug..." );
         
         $enforcement_enabled = $this->is_cart_enforcement_enabled();
         $should_block = $this->should_block_checkout();
