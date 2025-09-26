@@ -878,11 +878,8 @@ class Cart_Guard {
         ?>
         <script type="text/javascript">
             // Protection contre les chargements multiples
-            if (window.wcqsDebugLoaded) {
-                console.log('⚠️ WCQS Debug déjà chargé - Arrêt pour éviter les doublons');
-                return;
-            }
-            window.wcqsDebugLoaded = true;
+            if (!window.wcqsDebugLoaded) {
+                window.wcqsDebugLoaded = true;
             
             console.log('=== WCQS Cart_Guard Debug DÉTAILLÉ (v0.7.13) ===');
         console.log('🔧 Configuration:');
@@ -1026,6 +1023,7 @@ class Cart_Guard {
         console.log('    * Aucun test validé: <?php echo ! $has_validated_tests ? 'OUI' : 'NON'; ?>');
         <?php endif; ?>
         
+            } // Fermeture du if (!window.wcqsDebugLoaded)
         </script>
         <?php
     }
