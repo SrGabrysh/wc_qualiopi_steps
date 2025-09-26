@@ -106,6 +106,9 @@ class Cart_Guard {
         // Debug hook pour vérifier l'exécution
         \add_action( 'wp_footer', [ $this, 'debug_cart_state' ] );
         
+        // Modification du bouton pour WooCommerce Blocks (JavaScript)
+        \add_action( 'wp_footer', [ $this, 'modify_checkout_button_blocks' ] );
+        
         error_log( '[WCQS] Cart_Guard: All hooks initialized (Expert Fix)' );
     }
     
@@ -580,6 +583,108 @@ class Cart_Guard {
                 'notice'
             );
         }
+    }
+    
+    /**
+     * Modifier le bouton checkout via JavaScript pour WooCommerce Blocks
+     */
+    public function modify_checkout_button_blocks(): void {
+        if ( ! is_cart() || ! $this->should_block_checkout() ) {
+            return;
+        }
+        
+        $test_url = $this->get_test_page_url_for_cart();
+        if ( ! $test_url ) {
+            return;
+        }
+        
+        // Script JavaScript pour modifier le bouton checkout
+        ?>
+        <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fonction pour modifier le bouton
+            function modifyCheckoutButton() {
+                // Sélecteurs pour différents types de boutons checkout
+                const selectors = [
+                    '.wc-block-cart__submit-button',
+                    '.wc-block-checkout__actions_row .wc-block-components-checkout-place-order-button',
+                    '.checkout-button',
+                    'a[href*="checkout"], a[href*="commander"]',
+                    '.wc-proceed-to-checkout a'
+                ];
+                
+                let buttonFound = false;
+                
+                selectors.forEach(selector => {
+                    const buttons = document.querySelectorAll(selector);
+                    buttons.forEach(button => {
+                        if (button && !button.classList.contains('wcqs-modified')) {
+                            // Marquer comme modifié
+                            button.classList.add('wcqs-modified');
+                            
+                            // Modifier le texte
+                            if (button.textContent) {
+                                button.textContent = '🎯 Faire le test de positionnement';
+                            }
+                            if (button.innerHTML && !button.textContent) {
+                                button.innerHTML = '🎯 Faire le test de positionnement';
+                            }
+                            
+                            // Modifier l'URL si c'est un lien
+                            if (button.tagName === 'A') {
+                                button.href = '<?php echo esc_js( $test_url ); ?>';
+                            }
+                            
+                            // Ajouter un style distinctif
+                            button.style.backgroundColor = '#ff9800';
+                            button.style.color = 'white';
+                            button.style.fontWeight = 'bold';
+                            
+                            buttonFound = true;
+                            console.log('WCQS: Bouton checkout modifié', button);
+                        }
+                    });
+                });
+                
+                return buttonFound;
+            }
+            
+            // Modifier immédiatement
+            modifyCheckoutButton();
+            
+            // Observer les changements DOM pour les Blocks qui se chargent dynamiquement
+            const observer = new MutationObserver(function(mutations) {
+                let shouldCheck = false;
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                        shouldCheck = true;
+                    }
+                });
+                
+                if (shouldCheck) {
+                    setTimeout(modifyCheckoutButton, 100);
+                }
+            });
+            
+            // Observer le body pour les changements
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+            
+            // Vérifier périodiquement pendant les 10 premières secondes
+            let checks = 0;
+            const intervalId = setInterval(function() {
+                checks++;
+                modifyCheckoutButton();
+                
+                if (checks >= 20) { // 20 * 500ms = 10 secondes
+                    clearInterval(intervalId);
+                }
+            }, 500);
+        });
+        </script>
+        <?php
     }
     
     /**
