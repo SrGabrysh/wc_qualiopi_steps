@@ -119,13 +119,9 @@ class Cart_Guard {
         \add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ] );
         $hooks_registered[] = 'wp_enqueue_scripts';
         
-        // Debug hook pour vérifier l'exécution - FORCER SUR TOUTES LES PAGES
+        // Debug hook pour vérifier l'exécution - SEULEMENT wp_footer
         \add_action( 'wp_footer', [ $this, 'debug_cart_state' ] );
-        \add_action( 'wp_head', [ $this, 'debug_cart_state' ] );
-        \add_action( 'init', [ $this, 'debug_cart_state' ] );
         $hooks_registered[] = 'wp_footer (debug)';
-        $hooks_registered[] = 'wp_head (debug)';  
-        $hooks_registered[] = 'init (debug)';
         
         // Modification du bouton pour WooCommerce Blocks (JavaScript)
         \add_action( 'wp_footer', [ $this, 'modify_checkout_button_blocks' ] );
@@ -852,8 +848,15 @@ class Cart_Guard {
         
         // Ajouter debug JavaScript ULTRA détaillé + logique correcte
         ?>
-        <script type="text/javascript">
-        console.log('=== WCQS Cart_Guard Debug DÉTAILLÉ (v0.7.8) ===');
+            <script type="text/javascript">
+            // Protection contre les chargements multiples
+            if (window.wcqsDebugLoaded) {
+                console.log('⚠️ WCQS Debug déjà chargé - Arrêt pour éviter les doublons');
+                return;
+            }
+            window.wcqsDebugLoaded = true;
+            
+            console.log('=== WCQS Cart_Guard Debug DÉTAILLÉ (v0.7.13) ===');
         console.log('🔧 Configuration:');
         console.log('  - Enforcement enabled:', <?php echo $enforcement_enabled ? 'true' : 'false'; ?>);
         console.log('  - Should block checkout:', <?php echo $should_block ? 'true' : 'false'; ?>);
@@ -970,17 +973,21 @@ class Cart_Guard {
         // Réexécuter après chargement complet
         document.addEventListener('DOMContentLoaded', forceShowCheckoutButton);
         
-            // Réexécuter périodiquement pendant 5 secondes (éviter conflits de variables)
-            let wcqsForceChecks_<?php echo uniqid(); ?> = 0;
-            const wcqsForceInterval_<?php echo uniqid(); ?> = setInterval(function() {
-                wcqsForceChecks_<?php echo uniqid(); ?>++;
-                forceShowCheckoutButton();
+            // Réexécuter périodiquement pendant 5 secondes (variables cohérentes)
+            if (!window.wcqsForceRunning) {
+                window.wcqsForceRunning = true;
+                let forceChecks = 0;
+                const forceInterval = setInterval(function() {
+                    forceChecks++;
+                    forceShowCheckoutButton();
 
-                if (wcqsForceChecks_<?php echo uniqid(); ?> >= 10) {
-                    clearInterval(wcqsForceInterval_<?php echo uniqid(); ?>);
-                    console.log('🏁 Fin du forçage périodique du bouton checkout');
-                }
-            }, 500);
+                    if (forceChecks >= 10) {
+                        clearInterval(forceInterval);
+                        window.wcqsForceRunning = false;
+                        console.log('🏁 Fin du forçage périodique du bouton checkout');
+                    }
+                }, 500);
+            }
         
         <?php else: ?>
         console.log('❌ CONDITIONS NON REMPLIES - Bouton checkout ne sera PAS forcé');
