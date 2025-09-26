@@ -226,6 +226,39 @@ class WCQS_Session {
 	}
 
 	/**
+	 * Nettoie toutes les sessions pour un produit spécifique
+	 *
+	 * @param int $product_id ID du produit
+	 * @return bool Succès de l'opération
+	 */
+	public static function force_clear_product( int $product_id ): bool {
+		if ( ! self::is_wc_session_available() ) {
+			return false;
+		}
+
+		// Nettoyer toutes les variantes possibles de clés
+		$keys_to_clear = [
+			self::SESSION_PREFIX . $product_id,
+			'wcqs_solved_tests',
+			'wcqs_testpos_solved_' . $product_id,
+			'wcqs_test_' . $product_id
+		];
+
+		foreach ( $keys_to_clear as $key ) {
+			WC()->session->__unset( $key );
+		}
+
+		// Nettoyer aussi les données dans le tableau général si présent
+		$solved_tests = WC()->session->get( 'wcqs_solved_tests' );
+		if ( is_array( $solved_tests ) && isset( $solved_tests[ $product_id ] ) ) {
+			unset( $solved_tests[ $product_id ] );
+			WC()->session->set( 'wcqs_solved_tests', $solved_tests );
+		}
+
+		return true;
+	}
+
+	/**
 	 * Vérifie si les sessions WooCommerce sont disponibles
 	 *
 	 * @return bool True si WC()->session est disponible

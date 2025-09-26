@@ -67,6 +67,14 @@ class Cart_Guard {
         }
         return self::$instance;
     }
+
+    /**
+     * Vide le cache des validations (Expert Fix)
+     */
+    public function clear_cache(): void {
+        $this->user_validations = [];
+        \error_log( "[WCQS EXPERT FIX] Cache Cart_Guard vidé" );
+    }
     
     /**
      * Constructeur privé (singleton)
@@ -363,66 +371,85 @@ class Cart_Guard {
     private function is_test_validated( int $user_id, int $product_id ): bool {
         $logger = \WcQualiopiSteps\Utils\WCQS_Logger::get_instance();
 
-        // Cache pour éviter les répétitions
-        $cache_key = "{$user_id}_{$product_id}";
-        if ( isset( $this->user_validations[ $cache_key ] ) ) {
-            $logger->debug( "Cart_Guard: Using cached validation result for user {$user_id}, product {$product_id}: " . ( $this->user_validations[ $cache_key ] ? 'VALIDATED' : 'NOT_VALIDATED' ) );
-            return $this->user_validations[ $cache_key ];
-        }
-
+        // IMPORTANT: Pas de cache pour les vérifications critiques
+        // Le cache causait des faux positifs persistants
+        
         $is_validated = false;
 
-        // 1. Vérifier la session WooCommerce (priorité)
-        $logger->debug( "Cart_Guard: Checking session validation for product {$product_id}" );
-        $session_validated = WCQS_Session::is_solved( $product_id );
-        $logger->debug( "Cart_Guard: Session validation result for product {$product_id}: " . ( $session_validated ? 'SOLVED' : 'NOT_SOLVED' ) );
-
-        if ( $session_validated ) {
-            $is_validated = true;
-            $logger->debug( "Cart_Guard: Test validated via session for product {$product_id}" );
+        // 1. Vérification stricte de la session WooCommerce
+        if ( class_exists( '\\WcQualiopiSteps\\Utils\\WCQS_Session' ) ) {
+            $logger->debug( "Cart_Guard: Checking session validation for product {$product_id}" );
+            
+            // Pour l'instant, utiliser la méthode existante mais avec logs détaillés
+            $session_validated = WCQS_Session::is_solved( $product_id );
+            $logger->debug( "Cart_Guard: Session validation result: " . ( $session_validated ? 'SOLVED' : 'NOT_SOLVED' ) );
+            \error_log( "[WCQS EXPERT FIX] Session check for product {$product_id}: " . ( $session_validated ? 'SOLVED' : 'NOT_SOLVED' ) );
+            
+            if ( $session_validated ) {
+                $is_validated = true;
+                $logger->debug( "Cart_Guard: Test validated via session for product {$product_id}" );
+                \error_log( "[WCQS EXPERT FIX] VALIDATED via session!" );
+            } else {
+                $logger->debug( "Cart_Guard: No valid session found for product {$product_id}" );
+                \error_log( "[WCQS EXPERT FIX] No valid session found" );
+            }
         }
 
-        // 2. Vérifier les user meta (fallback)
+        // 2. Si pas validé par session, vérifier user meta AVEC validation stricte
         if ( ! $is_validated && $user_id > 0 ) {
-            $meta_key = "_wcqs_testpos_ok_{$product_id}";
+            $meta_key = "_wcqs_testpos_validated_{$product_id}"; // Changé pour éviter confusion
             $meta_value = \get_user_meta( $user_id, $meta_key, true );
 
-            $logger->debug( "Cart_Guard: Checking user meta for key {$meta_key}, user {$user_id}" );
-            $logger->debug( "Cart_Guard: User meta value: " . ( $meta_value ? $meta_value : 'EMPTY' ) );
+            $logger->debug( "Cart_Guard: Checking NEW meta key {$meta_key}, user {$user_id}" );
+            \error_log( "[WCQS EXPERT FIX] Checking NEW meta key: {$meta_key}" );
             
-            // LOG CRITIQUE POUR DEBUG
-            \error_log( "[WCQS DEBUG] is_test_validated() - User {$user_id}, Product {$product_id}" );
-            \error_log( "[WCQS DEBUG] - Meta key: {$meta_key}" );
-            \error_log( "[WCQS DEBUG] - Meta value: " . ( $meta_value ? $meta_value : 'EMPTY' ) );
-
             if ( ! empty( $meta_value ) ) {
-                // Vérifier que la validation n'est pas trop ancienne (24h)
-                $validation_time = strtotime( $meta_value );
-                $logger->debug( "Cart_Guard: Validation timestamp: " . ( $validation_time ? date( 'Y-m-d H:i:s', $validation_time ) : 'INVALID' ) );
+                // Vérifier que c'est un array avec les bonnes clés
+                $meta_data = maybe_unserialize( $meta_value );
+                \error_log( "[WCQS EXPERT FIX] Meta data found: " . print_r( $meta_data, true ) );
                 
-                \error_log( "[WCQS DEBUG] - Validation timestamp: " . ( $validation_time ? date( 'Y-m-d H:i:s', $validation_time ) : 'INVALID' ) );
-
-                $is_expired = ( $validation_time && ( \time() - $validation_time ) >= \DAY_IN_SECONDS );
-                $logger->debug( "Cart_Guard: Validation expired: " . ( $is_expired ? 'YES' : 'NO' ) );
-                
-                \error_log( "[WCQS DEBUG] - Is expired: " . ( $is_expired ? 'YES' : 'NO' ) );
-
-                $is_validated = ( $validation_time && ! $is_expired );
-                if ( $is_validated ) {
-                    $logger->debug( "Cart_Guard: Test validated via user meta for product {$product_id}" );
-                    \error_log( "[WCQS DEBUG] - VALIDATION SUCCESS via user meta!" );
+                if ( is_array( $meta_data ) && 
+                     isset( $meta_data['validated'] ) && 
+                     isset( $meta_data['timestamp'] ) && 
+                     isset( $meta_data['test_completed'] ) ) {
+                    
+                    // Vérifier que le test a réellement été complété
+                    if ( $meta_data['test_completed'] === true && $meta_data['validated'] === true ) {
+                        $validation_time = (int) $meta_data['timestamp'];
+                        $is_expired = ( time() - $validation_time ) >= DAY_IN_SECONDS;
+                        
+                        if ( ! $is_expired ) {
+                            $is_validated = true;
+                            $logger->debug( "Cart_Guard: Test validated via NEW user meta for product {$product_id}" );
+                            \error_log( "[WCQS EXPERT FIX] VALIDATED via NEW user meta!" );
+                        } else {
+                            $logger->debug( "Cart_Guard: User meta validation expired for product {$product_id}" );
+                            \error_log( "[WCQS EXPERT FIX] Meta expired, cleaning..." );
+                            // Nettoyer la meta expirée
+                            delete_user_meta( $user_id, $meta_key );
+                        }
+                    } else {
+                        $logger->debug( "Cart_Guard: Test not completed for product {$product_id}" );
+                        \error_log( "[WCQS EXPERT FIX] Test not completed" );
+                    }
+                } else {
+                    $logger->debug( "Cart_Guard: Invalid meta format for product {$product_id}" );
+                    \error_log( "[WCQS EXPERT FIX] Invalid meta format, cleaning..." );
+                    // Supprimer les meta invalides
+                    delete_user_meta( $user_id, $meta_key );
                 }
             } else {
-                $logger->debug( "Cart_Guard: No user meta found for product {$product_id}" );
-                \error_log( "[WCQS DEBUG] - No user meta found" );
+                $logger->debug( "Cart_Guard: No NEW user meta found for product {$product_id}" );
+                \error_log( "[WCQS EXPERT FIX] No NEW user meta found - SHOULD BE FALSE!" );
             }
-        } else {
-            \error_log( "[WCQS DEBUG] - Skipping user meta check: is_validated={$is_validated}, user_id={$user_id}" );
         }
 
-        // Mettre en cache
-        $this->user_validations[ $cache_key ] = $is_validated;
-        $logger->debug( "Cart_Guard: Final validation result for user {$user_id}, product {$product_id}: " . ( $is_validated ? 'VALIDATED' : 'NOT_VALIDATED' ) );
+        // 3. LOG FINAL pour debug
+        $logger->info( 
+            "Cart_Guard: EXPERT FIX Final validation result for user {$user_id}, product {$product_id}: " . 
+            ( $is_validated ? 'VALIDATED' : 'NOT_VALIDATED' )
+        );
+        \error_log( "[WCQS EXPERT FIX] FINAL RESULT: " . ( $is_validated ? 'VALIDATED' : 'NOT_VALIDATED' ) );
 
         return $is_validated;
     }
