@@ -60,6 +60,15 @@ class Log_Viewer {
             'debug_log' => $upload_dir['basedir'] . '/debug-log-manager/',
             'wcqs_specific' => $upload_dir['basedir'] . '/wc-logs/wcqs_cart_guard_trace-'
         ];
+        
+        // 🔍 DEBUG: Afficher les chemins détectés
+        error_log( '[WCQS] Log_Viewer: Upload basedir = ' . $upload_dir['basedir'] );
+        error_log( '[WCQS] Log_Viewer: WC logs path = ' . $this->log_paths['wc_logs'] );
+        error_log( '[WCQS] Log_Viewer: Debug logs path = ' . $this->log_paths['debug_log'] );
+        
+        // Vérifier si les dossiers existent
+        error_log( '[WCQS] Log_Viewer: WC logs dir exists = ' . ( is_dir( $this->log_paths['wc_logs'] ) ? 'YES' : 'NO' ) );
+        error_log( '[WCQS] Log_Viewer: Debug logs dir exists = ' . ( is_dir( $this->log_paths['debug_log'] ) ? 'YES' : 'NO' ) );
     }
     
     /**
@@ -732,7 +741,10 @@ class Log_Viewer {
         $logs = [];
         $wc_log_dir = $this->log_paths['wc_logs'];
         
+        error_log( '[WCQS] Log_Viewer: Reading WC logs from: ' . $wc_log_dir );
+        
         if ( ! is_dir( $wc_log_dir ) ) {
+            error_log( '[WCQS] Log_Viewer: WC logs directory does not exist: ' . $wc_log_dir );
             return $logs;
         }
         
@@ -740,15 +752,25 @@ class Log_Viewer {
         $pattern = $wc_log_dir . 'wcqs_cart_guard_trace-*.log';
         $log_files = glob( $pattern );
         
+        error_log( '[WCQS] Log_Viewer: WC log pattern: ' . $pattern );
+        error_log( '[WCQS] Log_Viewer: Found WC log files: ' . count( $log_files ) );
+        
+        if ( $log_files ) {
+            error_log( '[WCQS] Log_Viewer: WC log files found: ' . implode( ', ', $log_files ) );
+        }
+        
         foreach ( $log_files as $log_file ) {
             if ( ! is_readable( $log_file ) ) {
+                error_log( '[WCQS] Log_Viewer: WC log file not readable: ' . $log_file );
                 continue;
             }
             
             $file_logs = $this->parse_log_file( $log_file, $time_limit, 'wc_logs' );
+            error_log( '[WCQS] Log_Viewer: Parsed ' . count( $file_logs ) . ' entries from: ' . $log_file );
             $logs = array_merge( $logs, $file_logs );
         }
         
+        error_log( '[WCQS] Log_Viewer: Total WC logs found: ' . count( $logs ) );
         return $logs;
     }
     
@@ -759,13 +781,23 @@ class Log_Viewer {
         $logs = [];
         $debug_log_dir = $this->log_paths['debug_log'];
         
+        error_log( '[WCQS] Log_Viewer: Reading debug logs from: ' . $debug_log_dir );
+        
         if ( ! is_dir( $debug_log_dir ) ) {
+            error_log( '[WCQS] Log_Viewer: Debug logs directory does not exist: ' . $debug_log_dir );
             return $logs;
         }
         
         // Chercher les fichiers debug récents
         $pattern = $debug_log_dir . '*debug.log';
         $log_files = glob( $pattern );
+        
+        error_log( '[WCQS] Log_Viewer: Debug log pattern: ' . $pattern );
+        error_log( '[WCQS] Log_Viewer: Found debug log files: ' . count( $log_files ) );
+        
+        if ( $log_files ) {
+            error_log( '[WCQS] Log_Viewer: Debug log files found: ' . implode( ', ', $log_files ) );
+        }
         
         // Trier par date de modification
         usort( $log_files, function( $a, $b ) {
@@ -777,13 +809,16 @@ class Log_Viewer {
         
         foreach ( $log_files as $log_file ) {
             if ( ! is_readable( $log_file ) ) {
+                error_log( '[WCQS] Log_Viewer: Debug log file not readable: ' . $log_file );
                 continue;
             }
             
             $file_logs = $this->parse_log_file( $log_file, $time_limit, 'debug_log' );
+            error_log( '[WCQS] Log_Viewer: Parsed ' . count( $file_logs ) . ' entries from: ' . $log_file );
             $logs = array_merge( $logs, $file_logs );
         }
         
+        error_log( '[WCQS] Log_Viewer: Total debug logs found: ' . count( $logs ) );
         return $logs;
     }
     
