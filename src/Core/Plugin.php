@@ -139,8 +139,30 @@ class Plugin {
 		// Initialiser les utilitaires de l'étape 2
 		$this->init_step2_utilities();
 		
-		// Initialiser le garde du panier de l'étape 3
-		$this->init_step3_cart_guard();
+		// CORRECTION EXPERTS: Initialiser Cart_Guard après WooCommerce
+		add_action( 'woocommerce_init', array( $this, 'init_step3_cart_guard_delayed' ), 20 );
+	}
+	
+	/**
+	 * Initialise le garde du panier après le chargement complet de WooCommerce
+	 * CORRECTION: Timing d'initialisation basé sur consensus des 5 experts
+	 */
+	public function init_step3_cart_guard_delayed() {
+		// Vérifier la disponibilité de la classe
+		if ( ! class_exists( '\\WcQualiopiSteps\\Frontend\\Cart_Guard' ) ) {
+			add_action( 'admin_notices', function() {
+				echo '<div class="notice notice-error"><p>' 
+				   . esc_html__( 'WCQS: Cart_Guard class not found. Check autoload.', 'wc_qualiopi_steps' )
+				   . '</p></div>';
+			});
+			return;
+		}
+
+		// Initialiser Cart_Guard maintenant que WC est prêt
+		if ( ! is_admin() && function_exists( 'WC' ) && WC() ) {
+			\WcQualiopiSteps\Frontend\Cart_Guard::get_instance();
+			error_log( '[WCQS] Cart_Guard: Initialized on woocommerce_init (Expert Fix)' );
+		}
 	}
 
 	/**

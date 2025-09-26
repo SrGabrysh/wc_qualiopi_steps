@@ -73,21 +73,40 @@ class Cart_Guard {
     
     /**
      * Initialiser les hooks WooCommerce
+     * CORRECTION EXPERTS: Hooks multiples + garde serveur universelle
      */
     private function init_hooks(): void {
-        // Seulement si le flag enforce_cart est activé
-        if ( ! $this->is_cart_enforcement_enabled() ) {
-            return;
-        }
+        error_log( '[WCQS] Cart_Guard: Initializing hooks (Expert Fix)...' );
         
-        // Hook principal : modifier l'affichage du bouton checkout
+        // CORRECTION: Toujours enregistrer les hooks, vérifier conditions dans callbacks
+        
+        // 1) Garde universelle par redirection (classique + Blocks)
+        \add_action( 'template_redirect', [ $this, 'guard_template_redirect' ], 0 );
+        
+        // 2) Hooks WooCommerce classiques (fallback)
         \add_action( 'woocommerce_proceed_to_checkout', [ $this, 'maybe_replace_checkout_button' ], 5 );
-        
-        // Hook pour ajouter les notices et CTA
         \add_action( 'woocommerce_proceed_to_checkout', [ $this, 'maybe_add_test_notice' ], 10 );
+        
+        // 3) Hooks alternatifs plus fiables
+        \add_action( 'woocommerce_cart_actions', [ $this, 'maybe_add_test_notice' ], 10 );
+        \add_action( 'woocommerce_before_cart_totals', [ $this, 'maybe_add_test_notice_before_totals' ], 5 );
+        
+        // 4) Intercepter Store API (Checkout Block)
+        \add_filter( 'rest_request_before_callbacks', [ $this, 'intercept_store_api_checkout' ], 5, 3 );
+        
+        // 5) Notices serveur (compatibles Blocks)
+        \add_action( 'wp', [ $this, 'maybe_add_server_notice' ] );
+        
+        // 6) Filtrer URL checkout (classique)
+        \add_filter( 'woocommerce_get_checkout_url', [ $this, 'filter_checkout_url_when_blocked' ], 10, 1 );
         
         // Styles et scripts
         \add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+        
+        // Debug hook pour vérifier l'exécution
+        \add_action( 'wp_footer', [ $this, 'debug_cart_state' ] );
+        
+        error_log( '[WCQS] Cart_Guard: All hooks initialized (Expert Fix)' );
     }
     
     /**
@@ -168,13 +187,23 @@ class Cart_Guard {
     
     /**
      * Remplacer le bouton checkout si nécessaire
-     * 
-     * Supprime le bouton "Commander" du DOM si un test est requis et non validé
+     * CORRECTION EXPERTS: Vérifier conditions dans callback
      */
     public function maybe_replace_checkout_button(): void {
-        if ( ! $this->should_block_checkout() ) {
+        error_log( '[WCQS] Cart_Guard: maybe_replace_checkout_button triggered' );
+        
+        // CORRECTION: Vérifier les conditions ici, pas à l'init
+        if ( ! $this->is_cart_enforcement_enabled() ) {
+            error_log( '[WCQS] Cart_Guard: Enforcement disabled, skipping' );
             return;
         }
+        
+        if ( ! $this->should_block_checkout() ) {
+            error_log( '[WCQS] Cart_Guard: Should not block checkout, skipping' );
+            return;
+        }
+        
+        error_log( '[WCQS] Cart_Guard: Blocking checkout button' );
         
         // Supprimer le bouton checkout par défaut
         \remove_action( 'woocommerce_proceed_to_checkout', 'woocommerce_button_proceed_to_checkout', 20 );
@@ -185,13 +214,25 @@ class Cart_Guard {
     
     /**
      * Ajouter la notice de test requis
+     * CORRECTION EXPERTS: Vérifier conditions dans callback
      */
     public function maybe_add_test_notice(): void {
+        error_log( '[WCQS] Cart_Guard: maybe_add_test_notice triggered' );
+        
+        // CORRECTION: Vérifier les conditions ici
+        if ( ! $this->is_cart_enforcement_enabled() ) {
+            error_log( '[WCQS] Cart_Guard: Enforcement disabled, no notice needed' );
+            return;
+        }
+        
         $pending_tests = $this->get_pending_tests_info();
         
         if ( empty( $pending_tests ) ) {
+            error_log( '[WCQS] Cart_Guard: No pending tests, no notice needed' );
             return;
         }
+        
+        error_log( '[WCQS] Cart_Guard: Adding test notices for ' . count( $pending_tests ) . ' tests' );
         
         // Afficher la notice pour chaque test requis
         foreach ( $pending_tests as $test_info ) {
@@ -447,5 +488,137 @@ class Cart_Guard {
     public function clear_cache(): void {
         $this->user_validations = [];
         $this->products_requiring_test = [];
+    }
+    
+    /**
+     * NOUVELLES MÉTHODES RECOMMANDÉES PAR LES 5 EXPERTS
+     */
+    
+    /**
+     * Garde universelle par redirection (Expert #1)
+     */
+    public function guard_template_redirect(): void {
+        if ( is_admin() || wp_doing_cron() || wp_doing_ajax() ) {
+            return;
+        }
+
+        if ( ! $this->should_block_checkout() ) {
+            return;
+        }
+
+        // Si on est sur le checkout, empêcher l'accès direct
+        if ( $this->is_checkout_page() ) {
+            $test_url = $this->get_test_page_url_for_cart();
+            if ( $test_url ) {
+                wp_safe_redirect( $test_url );
+                exit;
+            }
+        }
+    }
+    
+    /**
+     * Hook alternatif avant les totaux (Expert #2)
+     */
+    public function maybe_add_test_notice_before_totals(): void {
+        error_log( '[WCQS] Cart_Guard: maybe_add_test_notice_before_totals triggered' );
+        $this->maybe_add_test_notice();
+    }
+    
+    /**
+     * Interception Store API pour WooCommerce Blocks (Expert #1)
+     */
+    public function intercept_store_api_checkout( $response, $handler, \WP_REST_Request $request ) {
+        $route = $request->get_route();
+        $method = $request->get_method();
+
+        // Routes Checkout Store API
+        if ( $method === 'POST' && preg_match( '#^/wc/store(/v[0-9]+)?/checkout$#', $route ) ) {
+            if ( $this->should_block_checkout() ) {
+                return new \WP_Error(
+                    'wcqs_checkout_blocked',
+                    __( 'Le test de positionnement doit être validé avant le paiement.', 'wc-qualiopi-steps' ),
+                    [ 'status' => 403 ]
+                );
+            }
+        }
+
+        return $response;
+    }
+    
+    /**
+     * Notices serveur compatibles Blocks (Expert #1)
+     */
+    public function maybe_add_server_notice(): void {
+        if ( $this->should_block_checkout() && ( is_cart() || $this->is_checkout_page() ) ) {
+            wc_add_notice(
+                __( 'Pour poursuivre, vous devez d\'abord réaliser le test de positionnement lié à cette formation.', 'wc-qualiopi-steps' ),
+                'notice'
+            );
+        }
+    }
+    
+    /**
+     * Filtrer URL checkout (Expert #1)
+     */
+    public function filter_checkout_url_when_blocked( string $url ): string {
+        if ( $this->should_block_checkout() ) {
+            $test_url = $this->get_test_page_url_for_cart();
+            if ( $test_url ) {
+                return $test_url;
+            }
+        }
+        return $url;
+    }
+    
+    /**
+     * Debug de l'état du panier (Expert #2)
+     */
+    public function debug_cart_state(): void {
+        if ( ! $this->is_cart_page() ) {
+            return;
+        }
+        
+        $enforcement_enabled = $this->is_cart_enforcement_enabled();
+        $should_block = $this->should_block_checkout();
+        $cart_count = function_exists( 'WC' ) && WC() && WC()->cart ? WC()->cart->get_cart_contents_count() : 0;
+        $pending_tests = $this->get_pending_tests_info();
+        
+        error_log( "[WCQS] Cart_Guard DEBUG: cart_page=true, enforcement={$enforcement_enabled}, should_block={$should_block}, cart_items={$cart_count}, pending_tests=" . count( $pending_tests ) );
+        
+        // Ajouter debug JavaScript
+        ?>
+        <script type="text/javascript">
+        console.log('=== WCQS Cart_Guard Debug (Expert Fix) ===');
+        console.log('Enforcement enabled:', <?php echo $enforcement_enabled ? 'true' : 'false'; ?>);
+        console.log('Should block checkout:', <?php echo $should_block ? 'true' : 'false'; ?>);
+        console.log('Cart items count:', <?php echo $cart_count; ?>);
+        console.log('Pending tests count:', <?php echo count( $pending_tests ); ?>);
+        console.log('Pending tests:', <?php echo json_encode( $pending_tests ); ?>);
+        </script>
+        <?php
+    }
+    
+    /**
+     * Helper pour obtenir l'URL de test pour le panier (Expert #1)
+     */
+    private function get_test_page_url_for_cart(): ?string {
+        if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart || WC()->cart->is_empty() ) {
+            return null;
+        }
+        
+        $item = reset( WC()->cart->get_cart() );
+        if ( ! $item || empty( $item['product_id'] ) ) {
+            return null;
+        }
+        
+        $product_id = (int) $item['product_id'];
+        $mapping = WCQS_Mapping::get_for_product( $product_id );
+        
+        if ( ! $mapping || empty( $mapping['active'] ) || empty( $mapping['page_id'] ) ) {
+            return null;
+        }
+        
+        $url = get_permalink( (int) $mapping['page_id'] );
+        return $url ?: null;
     }
 }
