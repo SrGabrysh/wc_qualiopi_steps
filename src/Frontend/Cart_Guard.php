@@ -1,5 +1,9 @@
 <?php
 /**
+ * ⚠️ WARNING CRITIQUE: TB-Formation utilise WooCommerce BLOCKS
+ * Les hooks classiques woocommerce_proceed_to_checkout, etc. ne fonctionnent PAS.
+ * Utiliser JavaScript + Store API + template_redirect pour les modifications.
+ * 
  * Cart Guard - UX panier pour WC Qualiopi Steps
  * 
  * Masque le bouton "Commander" si test non validé et affiche le CTA "Passer le test"
@@ -189,6 +193,10 @@ class Cart_Guard {
     }
     
     /**
+     * ⚠️ WARNING: Cette fonction ne se déclenche PAS avec WooCommerce Blocks !
+     * Hook woocommerce_proceed_to_checkout ignoré par les Blocks React.
+     * Utiliser modify_checkout_button_blocks() à la place.
+     * 
      * Remplacer le bouton checkout si nécessaire
      * CORRECTION EXPERTS: Vérifier conditions dans callback + Test d'isolation Expert #5
      */
@@ -217,6 +225,10 @@ class Cart_Guard {
     }
     
     /**
+     * ⚠️ WARNING: Cette fonction ne se déclenche PAS avec WooCommerce Blocks !
+     * Hooks woocommerce_cart_actions, etc. ignorés par les Blocks React.
+     * Utiliser maybe_add_server_notice() à la place.
+     * 
      * Ajouter la notice de test requis
      * CORRECTION EXPERTS: Vérifier conditions dans callback + Test d'isolation Expert #5
      */
@@ -586,6 +598,9 @@ class Cart_Guard {
     }
     
     /**
+     * ✅ CETTE FONCTION FONCTIONNE avec WooCommerce Blocks !
+     * Utilise JavaScript pour modifier l'interface React côté client.
+     * 
      * Modifier le bouton checkout via JavaScript pour WooCommerce Blocks
      */
     public function modify_checkout_button_blocks(): void {

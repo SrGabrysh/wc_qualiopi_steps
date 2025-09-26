@@ -24,7 +24,7 @@ class Plugin {
 	/**
 	 * Version du plugin
 	 */
-	const VERSION = '0.7.0';
+	const VERSION = '0.6.15';
 
 	/**
 	 * Flags par défaut du plugin
@@ -299,9 +299,11 @@ class Plugin {
 	 */
 	public function register_admin_pages(): void {
 		// Sécurise le chargement de la page (évite Class Not Found si autoload/chemin KO)
-		$file = WC_QUALIOPI_STEPS_PLUGIN_DIR . 'src/Admin/Settings_Page.php';
-		if ( file_exists( $file ) ) {
-			require_once $file;
+		$settings_file = WC_QUALIOPI_STEPS_PLUGIN_DIR . 'src/Admin/Settings_Page.php';
+		$log_viewer_file = WC_QUALIOPI_STEPS_PLUGIN_DIR . 'src/Admin/Log_Viewer.php';
+		
+		if ( file_exists( $settings_file ) ) {
+			require_once $settings_file;
 		} else {
 			add_action( 'admin_notices', static function () {
 				echo '<div class="notice notice-error"><p>'
@@ -309,6 +311,19 @@ class Plugin {
 				   . '</p></div>';
 			} );
 			return;
+		}
+		
+		// Charger Log_Viewer
+		if ( file_exists( $log_viewer_file ) ) {
+			require_once $log_viewer_file;
+			// Initialiser le Log_Viewer
+			\WcQualiopiSteps\Admin\Log_Viewer::get_instance();
+		} else {
+			add_action( 'admin_notices', static function () {
+				echo '<div class="notice notice-error"><p>'
+				   . esc_html__( 'WCQS: fichier Log_Viewer.php introuvable.', 'wc_qualiopi_steps' )
+				   . '</p></div>';
+			} );
 		}
 
 		// Page sous Réglages

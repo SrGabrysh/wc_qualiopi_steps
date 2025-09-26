@@ -209,6 +209,12 @@ class Settings_Page {
 		<div class="wrap wcqs-wrap">
 			<h1><?php echo $title; ?></h1>
 			<p class="description"><?php echo $desc; ?></p>
+			
+			<?php
+			// Intégrer le Log Viewer
+			$log_viewer = \WcQualiopiSteps\Admin\Log_Viewer::get_instance();
+			$log_viewer->render_log_viewer();
+			?>
 
 			<form method="post">
 				<?php wp_nonce_field( 'wcqs_save_mapping', 'wcqs_nonce' ); ?>
