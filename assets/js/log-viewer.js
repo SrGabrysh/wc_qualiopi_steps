@@ -68,9 +68,9 @@
       }
 
       const { logs, stats } = response.data;
-      
+
       // Debug: afficher dans la console ce qui est reçu
-      console.log('WCQS Log Viewer - Données reçues:', { logs, stats });
+      console.log("WCQS Log Viewer - Données reçues:", { logs, stats });
 
       // Mettre à jour les statistiques
       this.updateStats(stats);
@@ -88,10 +88,11 @@
 
       logs.forEach((log, index) => {
         // Debug: afficher chaque log dans la console
-        if (index < 3) { // Afficher seulement les 3 premiers pour éviter le spam
+        if (index < 3) {
+          // Afficher seulement les 3 premiers pour éviter le spam
           console.log(`WCQS Log ${index}:`, log);
         }
-        
+
         const $logEntry = this.createLogEntry(log);
         $content.append($logEntry);
       });
@@ -100,12 +101,18 @@
     createLogEntry: function (log) {
       const levelClass = `wcqs-log-level-${log.level}`;
       const sourceClass = `wcqs-log-source-${log.source}`;
-      
+
       // S'assurer que toutes les valeurs sont des strings
-      const datetime = typeof log.datetime === 'string' ? log.datetime : JSON.stringify(log.datetime);
-      const level = typeof log.level === 'string' ? log.level : 'unknown';
-      const source = typeof log.source === 'string' ? log.source : 'unknown';
-      const message = typeof log.message === 'string' ? log.message : JSON.stringify(log.message);
+      const datetime =
+        typeof log.datetime === "string"
+          ? log.datetime
+          : JSON.stringify(log.datetime);
+      const level = typeof log.level === "string" ? log.level : "unknown";
+      const source = typeof log.source === "string" ? log.source : "unknown";
+      const message =
+        typeof log.message === "string"
+          ? log.message
+          : JSON.stringify(log.message);
 
       return $(`
                 <div class="wcqs-log-entry ${levelClass} ${sourceClass}">
@@ -113,8 +120,12 @@
                     <span class="wcqs-log-level">
                         <span class="wcqs-level-badge wcqs-level-${level}">${level.toUpperCase()}</span>
                     </span>
-                    <span class="wcqs-log-source">${this.formatSource(source)}</span>
-                    <span class="wcqs-log-message">${this.formatMessage(message)}</span>
+                    <span class="wcqs-log-source">${this.formatSource(
+                      source
+                    )}</span>
+                    <span class="wcqs-log-message">${this.formatMessage(
+                      message
+                    )}</span>
                 </div>
             `);
     },

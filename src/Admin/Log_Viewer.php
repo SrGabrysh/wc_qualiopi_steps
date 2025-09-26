@@ -66,34 +66,45 @@ class Log_Viewer {
      * Initialiser les hooks
      */
     private function init_hooks(): void {
+        // Actions AJAX pour les utilisateurs connectés
         add_action( 'wp_ajax_wcqs_get_logs', [ $this, 'ajax_get_logs' ] );
         add_action( 'wp_ajax_wcqs_clear_logs', [ $this, 'ajax_clear_logs' ] );
         add_action( 'wp_ajax_wcqs_download_logs', [ $this, 'ajax_download_logs' ] );
         add_action( 'wp_ajax_wcqs_test_hooks', [ $this, 'ajax_test_hooks' ] );
+        
+        // Scripts et styles
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+        
+        // Debug: Log que les hooks sont enregistrés
+        error_log( '[WCQS] Log_Viewer: AJAX hooks registered' );
     }
     
     /**
      * Charger les scripts et styles
      */
     public function enqueue_scripts( string $hook ): void {
+        error_log( '[WCQS] Log_Viewer: enqueue_scripts called for hook: ' . $hook );
+        
         if ( 'settings_page_wcqs-settings' !== $hook ) {
+            error_log( '[WCQS] Log_Viewer: Not settings page, skipping scripts' );
             return;
         }
         
+        $plugin_url = plugin_dir_url( dirname( dirname( __FILE__ ) ) );
+        
         wp_enqueue_script(
             'wcqs-log-viewer',
-            plugin_dir_url( dirname( __DIR__ ) ) . 'assets/js/log-viewer.js',
+            $plugin_url . 'assets/js/log-viewer.js',
             [ 'jquery' ],
-            '0.6.15',
+            '0.6.18',
             true
         );
         
         wp_enqueue_style(
             'wcqs-log-viewer',
-            plugin_dir_url( dirname( __DIR__ ) ) . 'assets/css/log-viewer.css',
+            $plugin_url . 'assets/css/log-viewer.css',
             [],
-            '0.6.15'
+            '0.6.18'
         );
         
         wp_localize_script(
@@ -404,17 +415,29 @@ class Log_Viewer {
      * AJAX: Récupérer les logs filtrés
      */
     public function ajax_get_logs(): void {
-        check_ajax_referer( 'wcqs_log_viewer', 'nonce' );
+        error_log( '[WCQS] Log_Viewer: ajax_get_logs called' );
+        
+        if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'wcqs_log_viewer' ) ) {
+            error_log( '[WCQS] Log_Viewer: Invalid nonce for get_logs' );
+            wp_send_json_error( [ 'message' => 'Nonce invalide' ] );
+            return;
+        }
         
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'Permissions insuffisantes', 'wc_qualiopi_steps' ) );
+            error_log( '[WCQS] Log_Viewer: Insufficient permissions for get_logs' );
+            wp_send_json_error( [ 'message' => 'Permissions insuffisantes' ] );
+            return;
         }
         
         $time_filter = sanitize_text_field( $_POST['time_filter'] ?? '60' );
         $level_filter = sanitize_text_field( $_POST['level_filter'] ?? 'all' );
         $source_filter = sanitize_text_field( $_POST['source_filter'] ?? 'all' );
         
+        error_log( '[WCQS] Log_Viewer: Getting logs with filters - time:' . $time_filter . ', level:' . $level_filter . ', source:' . $source_filter );
+        
         $logs = $this->get_filtered_logs( $time_filter, $level_filter, $source_filter );
+        
+        error_log( '[WCQS] Log_Viewer: Found ' . count( $logs['entries'] ) . ' log entries' );
         
         // S'assurer que toutes les données sont des strings
         $cleaned_logs = array_map( function( $log ) {
@@ -457,9 +480,16 @@ class Log_Viewer {
      * AJAX: Télécharger les logs en JSON
      */
     public function ajax_download_logs(): void {
-        check_ajax_referer( 'wcqs_log_viewer', 'nonce' );
+        error_log( '[WCQS] Log_Viewer: ajax_download_logs called' );
+        
+        // Vérifier le nonce
+        if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'wcqs_log_viewer' ) ) {
+            error_log( '[WCQS] Log_Viewer: Invalid nonce for download' );
+            wp_die( __( 'Nonce invalide', 'wc_qualiopi_steps' ) );
+        }
         
         if ( ! current_user_can( 'manage_options' ) ) {
+            error_log( '[WCQS] Log_Viewer: Insufficient permissions for download' );
             wp_die( __( 'Permissions insuffisantes', 'wc_qualiopi_steps' ) );
         }
         
@@ -467,13 +497,15 @@ class Log_Viewer {
         $level_filter = sanitize_text_field( $_POST['level_filter'] ?? 'all' );
         $source_filter = sanitize_text_field( $_POST['source_filter'] ?? 'all' );
         
+        error_log( '[WCQS] Log_Viewer: Filters - time:' . $time_filter . ', level:' . $level_filter . ', source:' . $source_filter );
+        
         $logs = $this->get_filtered_logs( $time_filter, $level_filter, $source_filter );
         
         $export_data = [
             'export_info' => [
                 'timestamp' => current_time( 'Y-m-d H:i:s' ),
                 'site_url' => get_site_url(),
-                'plugin_version' => '0.6.15',
+                'plugin_version' => '0.6.18',
                 'filters' => [
                     'time' => $time_filter,
                     'level' => $level_filter,
@@ -493,13 +525,21 @@ class Log_Viewer {
         
         $filename = 'wcqs-logs-' . date( 'Y-m-d-H-i-s' ) . '.json';
         
-        header( 'Content-Type: application/json' );
+        // S'assurer qu'il n'y a pas de sortie avant les headers
+        if ( ob_get_level() ) {
+            ob_end_clean();
+        }
+        
+        header( 'Content-Type: application/json; charset=utf-8' );
         header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
         header( 'Cache-Control: no-cache, must-revalidate' );
         header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
+        header( 'Pragma: no-cache' );
         
         echo json_encode( $export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
-        exit;
+        
+        error_log( '[WCQS] Log_Viewer: JSON download completed' );
+        wp_die(); // Utiliser wp_die() au lieu de exit pour WordPress
     }
     
     /**
@@ -538,6 +578,8 @@ class Log_Viewer {
      * Récupérer les logs filtrés
      */
     private function get_filtered_logs( string $time_filter, string $level_filter, string $source_filter ): array {
+        error_log( '[WCQS] Log_Viewer: get_filtered_logs called with filters: time=' . $time_filter . ', level=' . $level_filter . ', source=' . $source_filter );
+        
         $logs = [];
         $stats = [
             'total' => 0,
