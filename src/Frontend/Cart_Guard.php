@@ -94,6 +94,35 @@ class Cart_Guard {
     }
     
     /**
+     * Vérifier si nous sommes sur la page panier
+     * Support de l'URL française /panier/ et anglaise /cart/
+     * 
+     * @return bool
+     */
+    private function is_cart_page(): bool {
+        // Test WordPress standard
+        if ( \is_cart() ) {
+            return true;
+        }
+        
+        // Test alternatif pour URL française /panier/
+        if ( \function_exists( 'wc_get_page_id' ) ) {
+            $cart_page_id = \wc_get_page_id( 'cart' );
+            if ( $cart_page_id && \is_page( $cart_page_id ) ) {
+                return true;
+            }
+        }
+        
+        // Test par URL pour /panier/ ou /cart/
+        $request_uri = $_SERVER['REQUEST_URI'] ?? '';
+        if ( \strpos( $request_uri, '/panier/' ) !== false || \strpos( $request_uri, '/cart/' ) !== false ) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
      * Remplacer le bouton checkout si nécessaire
      * 
      * Supprime le bouton "Commander" du DOM si un test est requis et non validé
@@ -329,8 +358,8 @@ class Cart_Guard {
      * Charger les assets CSS/JS
      */
     public function enqueue_assets(): void {
-        // Seulement sur la page panier
-        if ( ! \is_cart() ) {
+        // Seulement sur la page panier (support URL française /panier/)
+        if ( ! $this->is_cart_page() ) {
             return;
         }
         
