@@ -66,54 +66,28 @@ class Log_Viewer {
      * Initialiser les hooks
      */
     private function init_hooks(): void {
-        // Scripts et styles seulement dans le constructeur
+        // Scripts et styles
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
-        
-        // Test d'écriture de log direct
-        $log_test_file = WP_CONTENT_DIR . '/wcqs_test_log.txt';
-        file_put_contents( $log_test_file, '[WCQS] Log_Viewer initialized at ' . current_time( 'Y-m-d H:i:s' ) . PHP_EOL, FILE_APPEND | LOCK_EX );
-        
-        // Debug: Log que le constructeur est appelé
-        error_log( '[WCQS] Log_Viewer: Constructor called' );
-        error_log( '[WCQS] Log_Viewer: Current user can manage options: ' . ( current_user_can( 'manage_options' ) ? 'YES' : 'NO' ) );
-        
-        // Enregistrer les hooks AJAX au bon moment
-        add_action( 'wp_loaded', [ $this, 'register_ajax_hooks' ] );
-    }
-    
-    /**
-     * Enregistrer les hooks AJAX au bon moment
-     */
-    public function register_ajax_hooks(): void {
-        // Actions AJAX pour les utilisateurs connectés
+
+        // Enregistrer les hooks AJAX directement ici
         add_action( 'wp_ajax_wcqs_get_logs', [ $this, 'ajax_get_logs' ] );
         add_action( 'wp_ajax_wcqs_clear_logs', [ $this, 'ajax_clear_logs' ] );
         add_action( 'wp_ajax_wcqs_download_logs', [ $this, 'ajax_download_logs' ] );
         add_action( 'wp_ajax_wcqs_test_hooks', [ $this, 'ajax_test_hooks' ] );
         
-        // Test que les hooks sont bien actifs
+        // Hook de test de connexion
         add_action( 'wp_ajax_wcqs_test_connection', function() {
-            $log_test_file = WP_CONTENT_DIR . '/wcqs_test_log.txt';
-            file_put_contents( $log_test_file, '[WCQS] Test connection called at ' . current_time( 'Y-m-d H:i:s' ) . PHP_EOL, FILE_APPEND | LOCK_EX );
-            error_log( '[WCQS] Log_Viewer: Test connection called' );
             wp_send_json_success( [ 'message' => 'Connection OK', 'timestamp' => current_time( 'Y-m-d H:i:s' ) ] );
         } );
         
-        // Debug: Log que les hooks AJAX sont enregistrés
-        error_log( '[WCQS] Log_Viewer: AJAX hooks registered at wp_loaded' );
-        
-        $log_test_file = WP_CONTENT_DIR . '/wcqs_test_log.txt';
-        file_put_contents( $log_test_file, '[WCQS] AJAX hooks registered at ' . current_time( 'Y-m-d H:i:s' ) . PHP_EOL, FILE_APPEND | LOCK_EX );
+        error_log( '[WCQS] Log_Viewer: AJAX hooks registered in init_hooks()' );
     }
     
     /**
      * Charger les scripts et styles
      */
     public function enqueue_scripts( string $hook ): void {
-        error_log( '[WCQS] Log_Viewer: enqueue_scripts called for hook: ' . $hook );
-        
         if ( 'settings_page_wcqs-settings' !== $hook ) {
-            error_log( '[WCQS] Log_Viewer: Not settings page, skipping scripts' );
             return;
         }
         
@@ -145,8 +119,6 @@ class Log_Viewer {
                 'confirm_clear' => __( 'Êtes-vous sûr de vouloir vider tous les logs ?', 'wc_qualiopi_steps' )
             ]
         ];
-        
-        error_log( '[WCQS] Log_Viewer: Localizing script with data: ' . json_encode( $localize_data ) );
         
         wp_localize_script(
             'wcqs-log-viewer',
