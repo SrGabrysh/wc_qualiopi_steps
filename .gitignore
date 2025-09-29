@@ -1,0 +1,30 @@
+# Dépendances Composer
+/vendor/
+
+# IDE
+/.idea/
+/.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs de développement local
+*.log
+
+# Fichiers temporaires
+*.tmp
+*.temp
+
+# Node modules (si assets JS/CSS)
+/node_modules/
+
+# Build artifacts
+/build/
+/dist/
+
+# Rapports de tests E2E
+/tests/reporting/*.md
+/tests/reporting/*.json

@@ -1,6 +1,6 @@
 # WC Qualiopi Steps
 
-**Version:** 0.7.17  
+**Version:** 0.7.19  
 **Auteur:** TB-Web
 
 ## Description
@@ -16,6 +16,17 @@ WC Qualiopi Steps est un plugin WooCommerce qui impose un test de positionnement
 
 1. Téléchargez le plugin
 2. Activez-le dans l'administration WordPress
+
+## Tests
+
+Le plugin utilise des **tests End-to-End (E2E)** pour valider le comportement utilisateur complet :
+
+```bash
+# Lancer les tests E2E
+python tests/E2E/framework_e2e.py
+```
+
+Voir `tests/E2E/README_E2E.md` pour le guide complet.
 
 ## Changelog
 

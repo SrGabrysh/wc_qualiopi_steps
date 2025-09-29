@@ -1,0 +1,924 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport Tests WC Qualiopi Steps - 20250929_113414</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+        .header h1 { margin: 0; font-size: 2.5em; }
+        .header .meta { opacity: 0.9; margin-top: 10px; }
+        .stats { display: flex; justify-content: space-around; padding: 20px; background: #f8f9fa; }
+        .stat { text-align: center; }
+        .stat-number { font-size: 2em; font-weight: bold; }
+        .stat-label { color: #666; margin-top: 5px; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .content { padding: 30px; }
+        .test-section { margin-bottom: 30px; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden; }
+        .test-header { padding: 15px; font-weight: bold; font-size: 1.2em; }
+        .test-header.success { background: #d4edda; color: #155724; }
+        .test-header.error { background: #f8d7da; color: #721c24; }
+        .test-content { padding: 20px; }
+        .command { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; margin-bottom: 10px; }
+        .output { background: #343a40; color: #f8f9fa; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 0.9em; max-height: 400px; overflow-y: auto; }
+        .footer { text-align: center; padding: 20px; color: #666; border-top: 1px solid #dee2e6; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        .badge-success { background: #28a745; color: white; }
+        .badge-error { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Rapport de Tests</h1>
+            <div class="meta">
+                <strong>WC Qualiopi Steps</strong><br>
+                📅 29/09/2025 à 11:37:26<br>
+                📁 e:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number success">3</div>
+                <div class="stat-label">Tests Réussis</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number error">4</div>
+                <div class="stat-label">Tests Échoués</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">42.9%</div>
+                <div class="stat-label">Taux de Réussite</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">7</div>
+                <div class="stat-label">Total Tests</div>
+            </div>
+        </div>
+        
+        <div class="content">
+
+            <div class="test-section">
+                <div class="test-header error">
+                    Tests généraux 
+                    <span class="badge badge-error">ÉCHEC</span>
+                </div>
+                <div class="test-content">
+                    <div class="command"><strong>Commande:</strong> composer test</div>
+                    
+                    <div class="output">
+  [30;43;1m WARN [39;49;22m Your XML configuration validates against a deprecated schema. Migrate your XML configuration using "--migrate-configuration"!
+
+  [44;1m INFO [49;22m Bootstrap WC Qualiopi Steps tests loaded.
+
+
+   FAIL  Tests\Unit\MappingTest
+  ⨯ WCQS_Mapping → it validates mapping configuration                                                                       0.71s  
+  ⨯ WCQS_Mapping → it manages cache correctly                                                                               0.23s  
+  ⨯ WCQS_Mapping → it gets complete mapping with cache                                                                      0.06s  
+  ⨯ WCQS_Mapping → it applies default values to product configuration                                                       0.01s  
+  ⨯ WCQS_Mapping → it migrates legacy gf_form_id to new structure                                                           0.01s  
+  ⨯ WCQS_Mapping → it gets configuration for specific product                                                               0.01s  
+  ⨯ WCQS_Mapping → it gets test URL for product                                                                             0.01s  
+  ⨯ WCQS_Mapping → it checks if product has active test                                                                     0.01s  
+  ⨯ WCQS_Mapping → it searches in mapping data                                                                              0.01s  
+  ⨯ WCQS_Mapping → it gets all products with filtering                                                                      0.05s  
+  ⨯ WCQS_Mapping → it provides mapping statistics                                                                           0.03s  
+  ⨯ WCQS_Mapping → it handles corrupted mapping data gracefully                                                             0.01s  
+  ✓ WCQS_Mapping → it returns null for non-existent product                                                                 0.09s  
+
+   PASS  Tests\Unit\CheckoutDecisionTest
+  ✓ CheckoutDecision → it allows checkout when enforcement is disabled                                                      0.16s  
+  ✓ CheckoutDecision → it allows checkout when no active mapping
+  ✓ CheckoutDecision → it allows checkout with valid temporary token
+  ✓ CheckoutDecision → it allows checkout when test is solved in session
+  ✓ CheckoutDecision → it allows checkout when test is validated in usermeta
+  ✓ CheckoutDecision → it prioritizes temporary token over session validation
+  ✓ CheckoutDecision → it prioritizes session over usermeta validation
+  ✓ CheckoutDecision → it handles multiple products correctly                                                               0.01s  
+  ✓ CheckoutDecision → it ignores usermeta validation for anonymous users
+  ✓ CheckoutDecision → it provides helper methods for decision checking
+  ✓ CheckoutDecision → it converts to array for logging
+  ✓ CheckoutDecision → it allows checkout when no product in cart
+  ✓ CheckoutDecision → it blocks checkout when no validation proof exists
+
+   PASS  Tests\Unit\ExampleTest
+  ✓ example                                                                                                                 0.01s  
+
+   PASS  Tests\Unit\SessionTest
+  ✓ WCQS_Session → it sets and checks solved status                                                                         0.01s  
+  ✓ WCQS_Session → it provides detailed session information
+  ✓ WCQS_Session → it cannot extend nonexistent sessions
+  ✓ WCQS_Session → it handles multiple products independently
+  ✓ WCQS_Session → it can unset solved status
+  ✓ WCQS_Session → it can extend existing sessions                                                                          0.01s  
+  ✓ WCQS_Session → it respects custom TTL                                                                                   2.01s  
+  ✓ WCQS_Session → it cleans up expired sessions                                                                            2.05s  
+  ✓ WCQS_Session → it provides session statistics                                                                           2.01s  
+  ✓ WCQS_Session → it lists all active sessions                                                                             2.09s  
+
+   PASS  Tests\Unit\SimpleTest
+  ✓ Simple Tests → it can run basic assertions                                                                              0.01s  
+  ✓ Simple Tests → it can test arrays
+  ✓ Simple Tests → it can test PHP functions
+
+   PASS  Tests\Unit\TokenTest
+  ✓ WCQS_Token → it rejects token with wrong user_id                                                                        0.01s  
+  ✓ WCQS_Token → it rejects token with wrong product_id
+  ✓ WCQS_Token → it rejects corrupted tokens
+  ✓ WCQS_Token → it rejects malformed tokens
+  ✓ WCQS_Token → it uses base64url encoding
+  ✓ WCQS_Token → it creates and verifies a valid token
+  ✓ WCQS_Token → it creates token with default parameters
+  ✓ WCQS_Token → it rejects expired tokens
+  ✓ WCQS_Token → it handles key rotation correctly
+  ✓ WCQS_Token → it generates incremental key versions
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it validates mapping configuration                                    Error   
+  Call to undefined method stdClass::get_status()
+
+  at src\Utils\WCQS_Mapping.php:201
+    197▕ 		if ( $product_id <= 0 ) {
+    198▕ 			$errors[] = __( 'Product ID is required', 'wc_qualiopi_steps' );
+    199▕ 		} else {
+    200▕ 			$product = wc_get_product( $product_id );
+  ➜ 201▕ 			if ( ! $product || $product->get_status() !== 'publish' ) {
+    202▕ 				$errors[] = __( 'Product must exist and be published', 'wc_qualiopi_steps' );
+    203▕ 			}
+    204▕ 		}
+    205▕
+
+  1   src\Utils\WCQS_Mapping.php:201
+  2   tests\Unit\MappingTest.php:204
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it manages cache correctly                                                    
+  Failed asserting that an array has the key 'product_123'
+
+  at tests\Unit\MappingTest.php:279
+    275▕ 
+    276▕     it('manages cache correctly', function () {
+    277▕         // Premier accès - charge depuis DB
+    278▕         $mapping1 = WCQS_Mapping::get_mapping();
+  ➜ 279▕         expect($mapping1)->toHaveKey('product_123');
+    280▕ 
+    281▕         // Modifier l'option directement (simulation changement externe)
+    282▕         $this->setOption('wcqs_testpos_mapping', ['_version' => 2, 'product_999' => []]);
+    283▕
+
+  1   tests\Unit\MappingTest.php:279
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it gets complete mapping with cache                                           
+  Failed asserting that an array has the key '_version'
+
+  at tests\Unit\MappingTest.php:46
+     42▕         $mapping2 = WCQS_Mapping::get_mapping(); // Deuxième appel depuis cache
+     43▕ 
+     44▕         expect($mapping1)
+     45▕             ->toBeArray()
+  ➜  46▕             ->toHaveKey('_version', 1)
+     47▕             ->toHaveKey('product_123')
+     48▕             ->toHaveKey('product_124');
+     49▕ 
+     50▕         expect($mapping2)->toBe($mapping1); // Même référence = cache utilisé
+
+  1   tests\Unit\MappingTest.php:46
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it applies default values to product configuration                            
+  Failed asserting that an array has the key 'product_id'
+
+  at tests\Unit\MappingTest.php:84
+     80▕ 
+     81▕         $config = WCQS_Mapping::get_for_product(100);
+     82▕ 
+     83▕         expect($config)
+  ➜  84▕             ->toHaveKey('product_id', 100)
+     85▕             ->toHaveKey('page_id', 200)
+     86▕             ->toHaveKey('form_source', 'learndash') // Défaut
+     87▕             ->toHaveKey('form_ref', '') // Défaut
+     88▕             ->toHaveKey('active', false) // Défaut
+
+  1   tests\Unit\MappingTest.php:84
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it migrates legacy gf_form_id to new structure                                
+  Failed asserting that an array has the key 'form_source'
+
+  at tests\Unit\MappingTest.php:106
+    102▕ 
+    103▕         $config = WCQS_Mapping::get_for_product(200);
+    104▕ 
+    105▕         expect($config)
+  ➜ 106▕             ->toHaveKey('form_source', 'gravityforms')
+    107▕             ->toHaveKey('form_ref', '42')
+    108▕             ->not()->toHaveKey('gf_form_id'); // Supprimé après migration
+    109▕     });
+    110▕
+
+  1   tests\Unit\MappingTest.php:106
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it gets configuration for specific product                                    
+  Failed asserting that null is of type array.
+
+  at tests\Unit\MappingTest.php:57
+     53▕     it('gets configuration for specific product', function () {
+     54▕         $config = WCQS_Mapping::get_for_product(123);
+     55▕ 
+     56▕         expect($config)
+  ➜  57▕             ->toBeArray()
+     58▕             ->toHaveKey('product_id', 123)
+     59▕             ->toHaveKey('page_id', 456)
+     60▕             ->toHaveKey('form_source', 'learndash')
+     61▕             ->toHaveKey('form_ref', '789')
+
+  1   tests\Unit\MappingTest.php:57
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it gets test URL for product                                                  
+  Failed asserting that null is of type string.
+
+  at tests\Unit\MappingTest.php:148
+    144▕         }
+    145▕ 
+    146▕         $url = WCQS_Mapping::get_test_url(123);
+    147▕         expect($url)
+  ➜ 148▕             ->toBeString()
+    149▕             ->toContain('https://example.com/test-page')
+    150▕             ->toContain('product_id=123');
+    151▕ 
+    152▕         // Avec paramètres personnalisés
+
+  1   tests\Unit\MappingTest.php:148
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it checks if product has active test                                          
+  Failed asserting that false is true.
+
+  at tests\Unit\MappingTest.php:125
+    121▕                 return null;
+    122▕             }
+    123▕         }
+    124▕ 
+  ➜ 125▕         expect(WCQS_Mapping::has_active_test(123))->toBeTrue(); // Active + page existe
+    126▕         expect(WCQS_Mapping::has_active_test(124))->toBeFalse(); // Inactif
+    127▕         expect(WCQS_Mapping::has_active_test(125))->toBeFalse(); // Page manquante
+    128▕         expect(WCQS_Mapping::has_active_test(999))->toBeFalse(); // Produit inexistant
+    129▕     });
+
+  1   tests\Unit\MappingTest.php:125
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it searches in mapping data                                                   
+  Failed asserting that an array has the key '123'
+
+  at tests\Unit\MappingTest.php:264
+    260▕ 
+    261▕         $results = WCQS_Mapping::search('WordPress');
+    262▕         expect($results)
+    263▕             ->toBeArray()
+  ➜ 264▕             ->toHaveKey(123); // Formation WordPress trouvée
+    265▕ 
+    266▕         $results_php = WCQS_Mapping::search('PHP');
+    267▕         expect($results_php)->toHaveKey(124);
+    268▕
+
+  1   tests\Unit\MappingTest.php:264
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it gets all products with filtering                                           
+  Failed asserting that actual size 0 matches expected size 3.
+
+  at tests\Unit\MappingTest.php:167
+    163▕     it('gets all products with filtering', function () {
+    164▕         $all_products = WCQS_Mapping::get_all_products();
+    165▕         expect($all_products)
+    166▕             ->toBeArray()
+  ➜ 167▕             ->toHaveCount(3)
+    168▕             ->toHaveKey(123)
+    169▕             ->toHaveKey(124)
+    170▕             ->toHaveKey(125);
+    171▕
+
+  1   tests\Unit\MappingTest.php:167
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it provides mapping statistics                                                
+  Failed asserting that 0 matches expected 3.
+
+  at tests\Unit\MappingTest.php:226
+    222▕         $stats = WCQS_Mapping::get_stats();
+    223▕ 
+    224▕         expect($stats)
+    225▕             ->toBeArray()
+  ➜ 226▕             ->toHaveKey('total', 3)
+    227▕             ->toHaveKey('active', 2)
+    228▕             ->toHaveKey('inactive', 1)
+    229▕             ->toHaveKey('problematic')
+    230▕             ->toHaveKey('health_score');
+
+  1   tests\Unit\MappingTest.php:226
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it handles corrupted mapping data gracefully                                  
+  Failed asserting that an array has the key '_version'
+
+  at tests\Unit\MappingTest.php:312
+    308▕ 
+    309▕         $mapping = WCQS_Mapping::get_mapping();
+    310▕         expect($mapping)
+    311▕             ->toBeArray()
+  ➜ 312▕             ->toHaveKey('_version', 1); // Fallback appliqué
+    313▕ 
+    314▕         // Configuration produit corrompue
+    315▕         $this->setOption('wcqs_testpos_mapping', [
+    316▕             '_version' => 1,
+
+  1   tests\Unit\MappingTest.php:312
+
+
+  Tests:    12 failed, 38 passed (169 assertions)
+  Duration: 17.26s
+
+</div>
+                    <div class="output" style="background: #721c24;"><strong>ERREUR:</strong><br>Script pest handling the test event returned with error code 2
+</div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-header error">
+                    Tests unitaires uniquement 
+                    <span class="badge badge-error">ÉCHEC</span>
+                </div>
+                <div class="test-content">
+                    <div class="command"><strong>Commande:</strong> composer test:unit</div>
+                    
+                    <div class="output">
+  [30;43;1m WARN [39;49;22m Your XML configuration validates against a deprecated schema. Migrate your XML configuration using "--migrate-configuration"!
+
+  [44;1m INFO [49;22m Bootstrap WC Qualiopi Steps tests loaded.
+
+
+   FAIL  Tests\Unit\MappingTest
+  ⨯ WCQS_Mapping → it validates mapping configuration                                                                       0.74s  
+  ⨯ WCQS_Mapping → it searches in mapping data                                                                              0.32s  
+  ⨯ WCQS_Mapping → it applies default values to product configuration                                                       0.01s  
+  ⨯ WCQS_Mapping → it migrates legacy gf_form_id to new structure                                                           0.01s  
+  ⨯ WCQS_Mapping → it gets configuration for specific product                                                               0.02s  
+  ⨯ WCQS_Mapping → it checks if product has active test                                                                     0.01s  
+  ⨯ WCQS_Mapping → it gets test URL for product                                                                             0.01s  
+  ⨯ WCQS_Mapping → it handles corrupted mapping data gracefully                                                             0.01s  
+  ⨯ WCQS_Mapping → it provides mapping statistics                                                                           0.04s  
+  ⨯ WCQS_Mapping → it gets all products with filtering                                                                      0.05s  
+  ⨯ WCQS_Mapping → it gets complete mapping with cache                                                                      0.01s  
+  ⨯ WCQS_Mapping → it manages cache correctly                                                                               0.01s  
+  ✓ WCQS_Mapping → it returns null for non-existent product                                                                 0.10s  
+
+   PASS  Tests\Unit\CheckoutDecisionTest
+  ✓ CheckoutDecision → it allows checkout when no product in cart                                                           0.14s  
+  ✓ CheckoutDecision → it allows checkout when no active mapping
+  ✓ CheckoutDecision → it allows checkout with valid temporary token
+  ✓ CheckoutDecision → it allows checkout when test is solved in session
+  ✓ CheckoutDecision → it allows checkout when test is validated in usermeta
+  ✓ CheckoutDecision → it blocks checkout when no validation proof exists                                                   0.02s  
+  ✓ CheckoutDecision → it prioritizes temporary token over session validation
+  ✓ CheckoutDecision → it prioritizes session over usermeta validation
+  ✓ CheckoutDecision → it ignores usermeta validation for anonymous users
+  ✓ CheckoutDecision → it provides helper methods for decision checking
+  ✓ CheckoutDecision → it converts to array for logging
+  ✓ CheckoutDecision → it handles multiple products correctly
+  ✓ CheckoutDecision → it allows checkout when enforcement is disabled
+
+   PASS  Tests\Unit\ExampleTest
+  ✓ example                                                                                                                 0.01s  
+
+   PASS  Tests\Unit\SessionTest
+  ✓ WCQS_Session → it can unset solved status                                                                               0.05s  
+  ✓ WCQS_Session → it provides detailed session information
+  ✓ WCQS_Session → it cannot extend nonexistent sessions
+  ✓ WCQS_Session → it handles multiple products independently
+  ✓ WCQS_Session → it sets and checks solved status
+  ✓ WCQS_Session → it can extend existing sessions                                                                          0.01s  
+  ✓ WCQS_Session → it respects custom TTL                                                                                   2.00s  
+  ✓ WCQS_Session → it provides session statistics                                                                           2.03s  
+  ✓ WCQS_Session → it cleans up expired sessions                                                                            2.01s  
+  ✓ WCQS_Session → it lists all active sessions                                                                             2.08s  
+
+   PASS  Tests\Unit\SimpleTest
+  ✓ Simple Tests → it can run basic assertions                                                                              0.01s  
+  ✓ Simple Tests → it can test arrays
+  ✓ Simple Tests → it can test PHP functions
+
+   PASS  Tests\Unit\TokenTest
+  ✓ WCQS_Token → it creates and verifies a valid token                                                                      0.01s  
+  ✓ WCQS_Token → it creates token with default parameters
+  ✓ WCQS_Token → it rejects expired tokens
+  ✓ WCQS_Token → it rejects token with wrong user_id
+  ✓ WCQS_Token → it rejects token with wrong product_id
+  ✓ WCQS_Token → it rejects corrupted tokens
+  ✓ WCQS_Token → it rejects malformed tokens
+  ✓ WCQS_Token → it handles key rotation correctly
+  ✓ WCQS_Token → it uses base64url encoding
+  ✓ WCQS_Token → it generates incremental key versions
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it validates mapping configuration                                    Error   
+  Call to undefined method stdClass::get_status()
+
+  at src\Utils\WCQS_Mapping.php:201
+    197▕ 		if ( $product_id <= 0 ) {
+    198▕ 			$errors[] = __( 'Product ID is required', 'wc_qualiopi_steps' );
+    199▕ 		} else {
+    200▕ 			$product = wc_get_product( $product_id );
+  ➜ 201▕ 			if ( ! $product || $product->get_status() !== 'publish' ) {
+    202▕ 				$errors[] = __( 'Product must exist and be published', 'wc_qualiopi_steps' );
+    203▕ 			}
+    204▕ 		}
+    205▕
+
+  1   src\Utils\WCQS_Mapping.php:201
+  2   tests\Unit\MappingTest.php:204
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it searches in mapping data                                                   
+  Failed asserting that an array has the key '123'
+
+  at tests\Unit\MappingTest.php:264
+    260▕ 
+    261▕         $results = WCQS_Mapping::search('WordPress');
+    262▕         expect($results)
+    263▕             ->toBeArray()
+  ➜ 264▕             ->toHaveKey(123); // Formation WordPress trouvée
+    265▕ 
+    266▕         $results_php = WCQS_Mapping::search('PHP');
+    267▕         expect($results_php)->toHaveKey(124);
+    268▕
+
+  1   tests\Unit\MappingTest.php:264
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it applies default values to product configuration                            
+  Failed asserting that an array has the key 'product_id'
+
+  at tests\Unit\MappingTest.php:84
+     80▕ 
+     81▕         $config = WCQS_Mapping::get_for_product(100);
+     82▕ 
+     83▕         expect($config)
+  ➜  84▕             ->toHaveKey('product_id', 100)
+     85▕             ->toHaveKey('page_id', 200)
+     86▕             ->toHaveKey('form_source', 'learndash') // Défaut
+     87▕             ->toHaveKey('form_ref', '') // Défaut
+     88▕             ->toHaveKey('active', false) // Défaut
+
+  1   tests\Unit\MappingTest.php:84
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it migrates legacy gf_form_id to new structure                                
+  Failed asserting that an array has the key 'form_source'
+
+  at tests\Unit\MappingTest.php:106
+    102▕ 
+    103▕         $config = WCQS_Mapping::get_for_product(200);
+    104▕ 
+    105▕         expect($config)
+  ➜ 106▕             ->toHaveKey('form_source', 'gravityforms')
+    107▕             ->toHaveKey('form_ref', '42')
+    108▕             ->not()->toHaveKey('gf_form_id'); // Supprimé après migration
+    109▕     });
+    110▕
+
+  1   tests\Unit\MappingTest.php:106
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it gets configuration for specific product                                    
+  Failed asserting that null is of type array.
+
+  at tests\Unit\MappingTest.php:57
+     53▕     it('gets configuration for specific product', function () {
+     54▕         $config = WCQS_Mapping::get_for_product(123);
+     55▕ 
+     56▕         expect($config)
+  ➜  57▕             ->toBeArray()
+     58▕             ->toHaveKey('product_id', 123)
+     59▕             ->toHaveKey('page_id', 456)
+     60▕             ->toHaveKey('form_source', 'learndash')
+     61▕             ->toHaveKey('form_ref', '789')
+
+  1   tests\Unit\MappingTest.php:57
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it checks if product has active test                                          
+  Failed asserting that false is true.
+
+  at tests\Unit\MappingTest.php:125
+    121▕                 return null;
+    122▕             }
+    123▕         }
+    124▕ 
+  ➜ 125▕         expect(WCQS_Mapping::has_active_test(123))->toBeTrue(); // Active + page existe
+    126▕         expect(WCQS_Mapping::has_active_test(124))->toBeFalse(); // Inactif
+    127▕         expect(WCQS_Mapping::has_active_test(125))->toBeFalse(); // Page manquante
+    128▕         expect(WCQS_Mapping::has_active_test(999))->toBeFalse(); // Produit inexistant
+    129▕     });
+
+  1   tests\Unit\MappingTest.php:125
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it gets test URL for product                                                  
+  Failed asserting that null is of type string.
+
+  at tests\Unit\MappingTest.php:148
+    144▕         }
+    145▕ 
+    146▕         $url = WCQS_Mapping::get_test_url(123);
+    147▕         expect($url)
+  ➜ 148▕             ->toBeString()
+    149▕             ->toContain('https://example.com/test-page')
+    150▕             ->toContain('product_id=123');
+    151▕ 
+    152▕         // Avec paramètres personnalisés
+
+  1   tests\Unit\MappingTest.php:148
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it handles corrupted mapping data gracefully                                  
+  Failed asserting that an array has the key '_version'
+
+  at tests\Unit\MappingTest.php:312
+    308▕ 
+    309▕         $mapping = WCQS_Mapping::get_mapping();
+    310▕         expect($mapping)
+    311▕             ->toBeArray()
+  ➜ 312▕             ->toHaveKey('_version', 1); // Fallback appliqué
+    313▕ 
+    314▕         // Configuration produit corrompue
+    315▕         $this->setOption('wcqs_testpos_mapping', [
+    316▕             '_version' => 1,
+
+  1   tests\Unit\MappingTest.php:312
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it provides mapping statistics                                                
+  Failed asserting that 0 matches expected 3.
+
+  at tests\Unit\MappingTest.php:226
+    222▕         $stats = WCQS_Mapping::get_stats();
+    223▕ 
+    224▕         expect($stats)
+    225▕             ->toBeArray()
+  ➜ 226▕             ->toHaveKey('total', 3)
+    227▕             ->toHaveKey('active', 2)
+    228▕             ->toHaveKey('inactive', 1)
+    229▕             ->toHaveKey('problematic')
+    230▕             ->toHaveKey('health_score');
+
+  1   tests\Unit\MappingTest.php:226
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it gets all products with filtering                                           
+  Failed asserting that actual size 0 matches expected size 3.
+
+  at tests\Unit\MappingTest.php:167
+    163▕     it('gets all products with filtering', function () {
+    164▕         $all_products = WCQS_Mapping::get_all_products();
+    165▕         expect($all_products)
+    166▕             ->toBeArray()
+  ➜ 167▕             ->toHaveCount(3)
+    168▕             ->toHaveKey(123)
+    169▕             ->toHaveKey(124)
+    170▕             ->toHaveKey(125);
+    171▕
+
+  1   tests\Unit\MappingTest.php:167
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it gets complete mapping with cache                                           
+  Failed asserting that an array has the key '_version'
+
+  at tests\Unit\MappingTest.php:46
+     42▕         $mapping2 = WCQS_Mapping::get_mapping(); // Deuxième appel depuis cache
+     43▕ 
+     44▕         expect($mapping1)
+     45▕             ->toBeArray()
+  ➜  46▕             ->toHaveKey('_version', 1)
+     47▕             ->toHaveKey('product_123')
+     48▕             ->toHaveKey('product_124');
+     49▕ 
+     50▕         expect($mapping2)->toBe($mapping1); // Même référence = cache utilisé
+
+  1   tests\Unit\MappingTest.php:46
+
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\MappingTest > `WCQS_Mapping` → it manages cache correctly                                                    
+  Failed asserting that an array has the key 'product_123'
+
+  at tests\Unit\MappingTest.php:279
+    275▕ 
+    276▕     it('manages cache correctly', function () {
+    277▕         // Premier accès - charge depuis DB
+    278▕         $mapping1 = WCQS_Mapping::get_mapping();
+  ➜ 279▕         expect($mapping1)->toHaveKey('product_123');
+    280▕ 
+    281▕         // Modifier l'option directement (simulation changement externe)
+    282▕         $this->setOption('wcqs_testpos_mapping', ['_version' => 2, 'product_999' => []]);
+    283▕
+
+  1   tests\Unit\MappingTest.php:279
+
+
+  Tests:    12 failed, 38 passed (169 assertions)
+  Duration: 17.47s
+
+</div>
+                    <div class="output" style="background: #721c24;"><strong>ERREUR:</strong><br>Script pest tests/Unit handling the test:unit event returned with error code 2
+</div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-header success">
+                    Tests logique métier 
+                    <span class="badge badge-success">SUCCÈS</span>
+                </div>
+                <div class="test-content">
+                    <div class="command"><strong>Commande:</strong> .\vendor\bin\pest tests\Unit\CheckoutDecisionTest.php --testdox</div>
+                    
+                    <div class="output">PHPUnit 10.5.36 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.8
+Configuration: E:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps\phpunit.xml
+
+
+  [30;43;1m WARN [39;49;22m Your XML configuration validates against a deprecated schema. Migrate your XML configuration using "--migrate-configuration"!
+
+  [44;1m INFO [49;22m Bootstrap WC Qualiopi Steps tests loaded.
+
+
+   PASS  Tests\Unit\CheckoutDecisionTest
+  ✓ CheckoutDecision → it allows checkout when enforcement is disabled                                                      0.39s  
+  ✓ CheckoutDecision → it allows checkout when no active mapping
+  ✓ CheckoutDecision → it allows checkout with valid temporary token
+  ✓ CheckoutDecision → it allows checkout when test is solved in session
+  ✓ CheckoutDecision → it allows checkout when test is validated in usermeta
+  ✓ CheckoutDecision → it prioritizes temporary token over session validation
+  ✓ CheckoutDecision → it prioritizes session over usermeta validation
+  ✓ CheckoutDecision → it handles multiple products correctly                                                               0.01s  
+  ✓ CheckoutDecision → it ignores usermeta validation for anonymous users
+  ✓ CheckoutDecision → it provides helper methods for decision checking
+  ✓ CheckoutDecision → it converts to array for logging                                                                     0.04s  
+  ✓ CheckoutDecision → it allows checkout when no product in cart
+  ✓ CheckoutDecision → it blocks checkout when no validation proof exists
+
+  Tests:    13 passed (49 assertions)
+  Duration: 7.48s
+
+Time: 00:02.005, Memory: 12.00 MB
+
+E:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps\tests\Unit\CheckoutDecisionTest.php
+ ✔ `CheckoutDecision` → it allows checkout when enforcement is disabled
+ ✔ `CheckoutDecision` → it allows checkout when no product in cart
+ ✔ `CheckoutDecision` → it allows checkout when no active mapping
+ ✔ `CheckoutDecision` → it allows checkout with valid temporary token
+ ✔ `CheckoutDecision` → it allows checkout when test is solved in session
+ ✔ `CheckoutDecision` → it allows checkout when test is validated in usermeta
+ ✔ `CheckoutDecision` → it blocks checkout when no validation proof exists
+ ✔ `CheckoutDecision` → it prioritizes temporary token over session validation
+ ✔ `CheckoutDecision` → it prioritizes session over usermeta validation
+ ✔ `CheckoutDecision` → it handles multiple products correctly
+ ✔ `CheckoutDecision` → it ignores usermeta validation for anonymous users
+ ✔ `CheckoutDecision` → it provides helper methods for decision checking
+ ✔ `CheckoutDecision` → it converts to array for logging
+
+OK, but there were issues!
+Tests: 13, Assertions: 49, PHPUnit Deprecations: 1.
+</div>
+                    
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-header success">
+                    Tests sécurité 
+                    <span class="badge badge-success">SUCCÈS</span>
+                </div>
+                <div class="test-content">
+                    <div class="command"><strong>Commande:</strong> .\vendor\bin\pest tests\Unit\TokenTest.php --testdox</div>
+                    
+                    <div class="output">PHPUnit 10.5.36 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.8
+Configuration: E:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps\phpunit.xml
+
+
+  [30;43;1m WARN [39;49;22m Your XML configuration validates against a deprecated schema. Migrate your XML configuration using "--migrate-configuration"!
+
+  [44;1m INFO [49;22m Bootstrap WC Qualiopi Steps tests loaded.
+
+
+   PASS  Tests\Unit\TokenTest
+  ✓ WCQS_Token → it creates and verifies a valid token                                                                      0.44s  
+  ✓ WCQS_Token → it creates token with default parameters
+  ✓ WCQS_Token → it rejects expired tokens                                                                                  0.01s  
+  ✓ WCQS_Token → it rejects token with wrong user_id
+  ✓ WCQS_Token → it rejects token with wrong product_id
+  ✓ WCQS_Token → it rejects corrupted tokens
+  ✓ WCQS_Token → it rejects malformed tokens
+  ✓ WCQS_Token → it handles key rotation correctly                                                                          0.18s  
+  ✓ WCQS_Token → it uses base64url encoding
+  ✓ WCQS_Token → it generates incremental key versions                                                                      0.03s  
+
+  Tests:    10 passed (40 assertions)
+  Duration: 8.00s
+
+Time: 00:02.692, Memory: 12.00 MB
+
+E:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps\tests\Unit\TokenTest.php
+ ✔ `WCQS_Token` → it creates and verifies a valid token
+ ✔ `WCQS_Token` → it creates token with default parameters
+ ✔ `WCQS_Token` → it rejects expired tokens
+ ✔ `WCQS_Token` → it rejects token with wrong user_id
+ ✔ `WCQS_Token` → it rejects token with wrong product_id
+ ✔ `WCQS_Token` → it rejects corrupted tokens
+ ✔ `WCQS_Token` → it rejects malformed tokens
+ ✔ `WCQS_Token` → it handles key rotation correctly
+ ✔ `WCQS_Token` → it uses base64url encoding
+ ✔ `WCQS_Token` → it generates incremental key versions
+
+OK, but there were issues!
+Tests: 10, Assertions: 40, PHPUnit Deprecations: 1.
+</div>
+                    
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-header success">
+                    Tests sessions 
+                    <span class="badge badge-success">SUCCÈS</span>
+                </div>
+                <div class="test-content">
+                    <div class="command"><strong>Commande:</strong> .\vendor\bin\pest tests\Unit\SessionTest.php --testdox</div>
+                    
+                    <div class="output">PHPUnit 10.5.36 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.8
+Configuration: E:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps\phpunit.xml
+
+
+  [30;43;1m WARN [39;49;22m Your XML configuration validates against a deprecated schema. Migrate your XML configuration using "--migrate-configuration"!
+
+  [44;1m INFO [49;22m Bootstrap WC Qualiopi Steps tests loaded.
+
+
+   PASS  Tests\Unit\SessionTest
+  ✓ WCQS_Session → it sets and checks solved status                                                                         0.51s  
+  ✓ WCQS_Session → it provides detailed session information                                                                 0.05s  
+  ✓ WCQS_Session → it cannot extend nonexistent sessions
+  ✓ WCQS_Session → it handles multiple products independently
+  ✓ WCQS_Session → it can extend existing sessions                                                                          0.01s  
+  ✓ WCQS_Session → it can unset solved status
+  ✓ WCQS_Session → it respects custom TTL                                                                                   2.01s  
+  ✓ WCQS_Session → it cleans up expired sessions                                                                            2.07s  
+  ✓ WCQS_Session → it provides session statistics                                                                           2.02s  
+  ✓ WCQS_Session → it lists all active sessions                                                                             2.14s  
+
+  Tests:    10 passed (51 assertions)
+  Duration: 16.32s
+
+Time: 00:10.698, Memory: 12.00 MB
+
+E:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps\tests\Unit\SessionTest.php
+ ✔ `WCQS_Session` → it sets and checks solved status
+ ✔ `WCQS_Session` → it respects custom TTL
+ ✔ `WCQS_Session` → it can unset solved status
+ ✔ `WCQS_Session` → it provides detailed session information
+ ✔ `WCQS_Session` → it cleans up expired sessions
+ ✔ `WCQS_Session` → it lists all active sessions
+ ✔ `WCQS_Session` → it can extend existing sessions
+ ✔ `WCQS_Session` → it cannot extend nonexistent sessions
+ ✔ `WCQS_Session` → it provides session statistics
+ ✔ `WCQS_Session` → it handles multiple products independently
+
+OK, but there were issues!
+Tests: 10, Assertions: 51, PHPUnit Deprecations: 1.
+</div>
+                    
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-header error">
+                    Tests d'intégration 
+                    <span class="badge badge-error">ÉCHEC</span>
+                </div>
+                <div class="test-content">
+                    <div class="command"><strong>Commande:</strong> .\vendor\bin\pest tests\Integration\ --testdox</div>
+                    
+                    <div class="output">PHPUnit 10.5.36 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.8
+Configuration: E:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps\phpunit.xml
+
+
+  [30;43;1m WARN [39;49;22m Your XML configuration validates against a deprecated schema. Migrate your XML configuration using "--migrate-configuration"!
+
+  [44;1m INFO [49;22m Bootstrap WC Qualiopi Steps tests loaded.
+
+
+   FAIL  Tests\Integration\TokenSessionIntegrationTest
+  ⨯ Token Session Integration → it handles token expiration with session cleanup                                            2.86s  
+  ✓ Token Session Integration → it validates complete user journey flow                                                     0.13s  
+  ✓ Token Session Integration → it handles concurrent user sessions correctly
+  ✓ Token Session Integration → it supports token rotation with persistent sessions                                         0.07s  
+  ✓ Token Session Integration → it creates token for validated session user
+
+   PASS  Tests\Integration\CheckoutFlowTest
+  ✓ Checkout Flow Integration → it allows checkout after successful validation                                              0.12s  
+  ✓ Checkout Flow Integration → it handles token-based validation flow
+  ✓ Checkout Flow Integration → it respects enforcement flag configuration
+  ✓ Checkout Flow Integration → it handles multiple products in cart correctly
+  ✓ Checkout Flow Integration → it integrates checkout decision with cart guard logic
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Integration\TokenSessionIntegrationTest > `Token Session Integration` → it handles token expiration with sessi…   
+  Failed asserting that 0 is equal to 1 or is greater than 1.
+
+  at tests\Integration\TokenSessionIntegrationTest.php:57
+     53▕         expect(WCQS_Session::is_solved($product_id))->toBeFalse();
+     54▕ 
+     55▕         // 5. Cleanup des sessions expirées
+     56▕         $cleaned = WCQS_Session::cleanup_expired();
+  ➜  57▕         expect($cleaned)->toBeGreaterThanOrEqual(1);
+     58▕     });
+     59▕ 
+     60▕     it('supports token rotation with persistent sessions', function () {
+     61▕         $user_id = 555;
+
+  1   tests\Integration\TokenSessionIntegrationTest.php:57
+
+
+  Tests:    1 failed, 9 passed (69 assertions)
+  Duration: 10.36s
+
+Time: 00:04.989, Memory: 12.00 MB
+
+E:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps\tests\Integration\CheckoutFlowTest.php
+ ✔ `Checkout Flow Integration` → it integrates checkout decision with cart guard logic
+ ✔ `Checkout Flow Integration` → it allows checkout after successful validation
+ ✔ `Checkout Flow Integration` → it handles token-based validation flow
+ ✔ `Checkout Flow Integration` → it respects enforcement flag configuration
+ ✔ `Checkout Flow Integration` → it handles multiple products in cart correctly
+
+E:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps\tests\Integration\TokenSessionIntegrationTest.php
+ ✔ `Token Session Integration` → it creates token for validated session user
+ ✘ `Token Session Integration` → it handles token expiration with session cleanup
+   │
+   │ Failed asserting that 0 is equal to 1 or is greater than 1.
+   │
+   │ E:\Mon Drive\00 - Dev\01 - Codes\Sites web\TB-Formation\dev_plugin_wc_qualiopi_steps\Plugins\wc_qualiopi_steps\tests\Integration\TokenSessionIntegrationTest.php:57
+   │
+ ✔ `Token Session Integration` → it supports token rotation with persistent sessions
+ ✔ `Token Session Integration` → it validates complete user journey flow
+ ✔ `Token Session Integration` → it handles concurrent user sessions correctly
+
+FAILURES!
+Tests: 10, Assertions: 69, Failures: 1, PHPUnit Deprecations: 1.
+</div>
+                    
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-header error">
+                    Couverture 
+                    <span class="badge badge-error">ÉCHEC</span>
+                </div>
+                <div class="test-content">
+                    <div class="command"><strong>Commande:</strong> composer test:coverage</div>
+                    
+                    <div class="output">
+  [39;41;1m ERROR [39;49;22m No code coverage driver is available.
+
+</div>
+                    <div class="output" style="background: #721c24;"><strong>ERREUR:</strong><br>Script pest --coverage --min=70 handling the test:coverage event returned with error code 1
+</div>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="footer">
+            <p>Rapport généré automatiquement le 29/09/2025 à 11:37:26</p>
+            <p>WC Qualiopi Steps Test Runner v1.0</p>
+        </div>
+    </div>
+</body>
+</html>

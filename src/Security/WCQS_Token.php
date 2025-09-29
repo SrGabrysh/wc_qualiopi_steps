@@ -222,6 +222,7 @@ class WCQS_Token {
 		// Vider cache
 		self::$secret_cache = null;
 		self::$previous_secret_cache = null;
+		self::$key_version_cache = null;
 		
 		return true;
 	}

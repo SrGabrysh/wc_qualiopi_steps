@@ -1,0 +1,31 @@
+# Fichiers et dossiers à exclure du package de déploiement
+
+# Tests E2E
+/tests/
+
+# Configuration développement
+/.github/
+/.vscode/
+/.idea/
+composer.json
+composer.lock
+.packageignore
+
+# Artefacts de build/test
+/vendor/
+/node_modules/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs et temporaires
+*.log
+*.tmp
+*.temp
+
+# Git
+/.git/
+.gitignore

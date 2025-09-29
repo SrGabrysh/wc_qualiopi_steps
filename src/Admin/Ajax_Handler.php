@@ -177,55 +177,51 @@ class Ajax_Handler {
 		}
 
 		$user_id = get_current_user_id();
-		
-		// Pour les tests, permettre la simulation même sans utilisateur connecté
-		// Mais utiliser l'ID 1 (admin) comme fallback pour les user_meta
+
+		// Si pas d'utilisateur connecté, utiliser l'ID admin pour les tests
 		if ( $user_id <= 0 ) {
-			error_log( "[WCQS DEBUG AJAX] Utilisateur non connecté, utilisation fallback admin ID=1 pour simulation" );
-			$user_id = 1; // ID admin par défaut pour les tests
+			$user_id = 1;
 		}
 
-		// Simuler la validation en session WooCommerce
+		// 1. Marquer en session WooCommerce avec force refresh
 		$session_set = false;
 		if ( class_exists( '\\WcQualiopiSteps\\Utils\\WCQS_Session' ) ) {
-			$session_set = \WcQualiopiSteps\Utils\WCQS_Session::set_solved( $product_id, 3600 ); // 1 heure
-			error_log( "[WCQS DEBUG AJAX] Session set_solved result: " . ( $session_set ? 'SUCCESS' : 'FAILED' ) );
-			
-			// Vérifier immédiatement
-			$session_check = \WcQualiopiSteps\Utils\WCQS_Session::is_solved( $product_id );
-			error_log( "[WCQS DEBUG AJAX] Session is_solved check: " . ( $session_check ? 'SOLVED' : 'NOT_SOLVED' ) );
+			// Forcer le clear avant de set
+			\WcQualiopiSteps\Utils\WCQS_Session::force_clear_product( $product_id );
+
+			// Puis set la nouvelle valeur
+			$session_set = \WcQualiopiSteps\Utils\WCQS_Session::set_solved( $product_id, 3600 );
+
+			// Forcer WooCommerce à sauvegarder la session immédiatement
+			if ( function_exists( 'WC' ) && WC()->session ) {
+				WC()->session->save_data();
+			}
+
+			error_log( "[WCQS] Simulation: Session set for product {$product_id}: " . ( $session_set ? 'SUCCESS' : 'FAILED' ) );
 		}
 
-		// Simuler la validation en user meta (preuve persistante)
+		// 2. Sauvegarder en user meta (clé standard)
 		$meta_key = "_wcqs_testpos_ok_{$product_id}";
-		$timestamp = date( 'c' ); // Format ISO 8601
-		$meta_updated = update_user_meta( $user_id, $meta_key, $timestamp );
-		
-		error_log( "[WCQS DEBUG AJAX] User meta update result: " . ( $meta_updated ? 'SUCCESS' : 'FAILED' ) );
-		error_log( "[WCQS DEBUG AJAX] Meta key: {$meta_key}" );
-		error_log( "[WCQS DEBUG AJAX] Meta value: {$timestamp}" );
-		
-		// Vérifier immédiatement
-		$meta_check = get_user_meta( $user_id, $meta_key, true );
-		error_log( "[WCQS DEBUG AJAX] Meta verification: " . ( $meta_check ? $meta_check : 'EMPTY' ) );
+		$timestamp = current_time( 'c' );
+		update_user_meta( $user_id, $meta_key, $timestamp );
 
-		// Log de l'action pour audit
-		error_log( "[WCQS] AJAX: Test validation simulated for user {$user_id}, product {$product_id}" );
-		
-		// Forcer l'invalidation du cache Cart_Guard
+		error_log( "[WCQS] Simulation: User meta set for user {$user_id}, product {$product_id}" );
+
+		// 3. Vider TOUS les caches
 		if ( class_exists( '\\WcQualiopiSteps\\Frontend\\Cart_Guard' ) ) {
 			$cart_guard = \WcQualiopiSteps\Frontend\Cart_Guard::get_instance();
 			$cart_guard->clear_cache();
-			error_log( "[WCQS DEBUG AJAX] Cart_Guard cache cleared" );
 		}
 
+		// Vider aussi le cache des transients WordPress
+		delete_transient( 'wcqs_validation_' . $product_id );
+
 		wp_send_json_success( array(
-			'message' => sprintf( __( 'Test simulé comme validé pour le produit #%d', 'wc_qualiopi_steps' ), $product_id ),
+			'message' => sprintf( __( 'Test validé pour le produit #%d', 'wc_qualiopi_steps' ), $product_id ),
 			'product_id' => $product_id,
 			'user_id' => $user_id,
 			'timestamp' => $timestamp,
-			'session_set' => true,
-			'meta_set' => true
+			'session_set' => $session_set
 		) );
 	}
 }

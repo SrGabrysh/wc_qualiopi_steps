@@ -236,23 +236,29 @@ class WCQS_Session {
 			return false;
 		}
 
-		// Nettoyer toutes les variantes possibles de clés
+		// Nettoyer TOUTES les clés possibles pour ce produit
 		$keys_to_clear = [
 			self::SESSION_PREFIX . $product_id,
 			'wcqs_solved_tests',
 			'wcqs_testpos_solved_' . $product_id,
-			'wcqs_test_' . $product_id
+			'wcqs_test_' . $product_id,
+			'testpos_solved_' . $product_id
 		];
 
 		foreach ( $keys_to_clear as $key ) {
 			WC()->session->__unset( $key );
 		}
 
-		// Nettoyer aussi les données dans le tableau général si présent
+		// Nettoyer aussi le tableau général si présent
 		$solved_tests = WC()->session->get( 'wcqs_solved_tests' );
-		if ( is_array( $solved_tests ) && isset( $solved_tests[ $product_id ] ) ) {
+		if ( is_array( $solved_tests ) ) {
 			unset( $solved_tests[ $product_id ] );
 			WC()->session->set( 'wcqs_solved_tests', $solved_tests );
+		}
+
+		// Forcer la sauvegarde immédiate
+		if ( WC()->session && method_exists( WC()->session, 'save_data' ) ) {
+			WC()->session->save_data();
 		}
 
 		return true;
