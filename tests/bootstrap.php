@@ -137,6 +137,26 @@ if ( ! function_exists( 'get_option' ) ) {
         return false;
     }
     
+    function add_action( $hook_name, $callback, $priority = 10, $accepted_args = 1 ) {
+        // Mock pour les tests - ne fait rien
+        return true;
+    }
+    
+    function add_filter( $hook_name, $callback, $priority = 10, $accepted_args = 1 ) {
+        // Mock pour les tests - ne fait rien
+        return true;
+    }
+    
+    function do_action( $hook_name, ...$args ) {
+        // Mock pour les tests - ne fait rien
+        return null;
+    }
+    
+    function apply_filters( $hook_name, $value, ...$args ) {
+        // Mock pour les tests - retourne la valeur sans modification
+        return $value;
+    }
+    
     function wp_mkdir_p( $target ) {
         $wrapper = null;
         
