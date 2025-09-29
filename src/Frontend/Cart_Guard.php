@@ -378,12 +378,6 @@ class Cart_Guard {
         if ( class_exists( '\\WcQualiopiSteps\\Utils\\WCQS_Session' ) ) {
             $logger->debug( "Cart_Guard: Checking session for product {$product_id}" );
 
-            // Forcer un refresh de la session
-            if ( function_exists( 'WC' ) && WC()->session ) {
-                // Force la session à recharger ses données
-                WC()->session->reload_session();
-            }
-
             $session_validated = WCQS_Session::is_solved( $product_id );
             $logger->info( "Cart_Guard: Session check for product {$product_id}: " . ( $session_validated ? 'SOLVED' : 'NOT_SOLVED' ) );
 
